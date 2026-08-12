@@ -1,0 +1,2217 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>EngUp — Разговорный английский без воды</title>
+<style>
+/* ============================================================
+   EngUp — автономное приложение для изучения разговорного
+   американского английского. Один файл, без интернета.
+   ============================================================ */
+
+:root{
+  /* --- Светлая тема: тёплая, живая, зелёно-янтарная --- */
+  --bg:            #F6F3EA;
+  --bg-elevated:   #FFFFFF;
+  --bg-sunken:     #EDE7D8;
+  --ink:           #1F2A22;
+  --ink-soft:      #5A6459;
+  --ink-faint:     #8B9186;
+  --line:          #DDD5C0;
+
+  --green-900:     #163326;
+  --green-700:     #1F5B3F;
+  --green-600:     #2C7A52;
+  --green-500:     #3C9468;
+  --green-100:     #DCEEE0;
+
+  --amber-600:     #D98A2B;
+  --amber-500:     #E8A33D;
+  --amber-100:     #FBEAD0;
+
+  --coral-500:     #D9634C;
+  --coral-100:     #F8E0D9;
+
+  --shadow-sm: 0 1px 2px rgba(22,51,38,.08);
+  --shadow-md: 0 6px 20px rgba(22,51,38,.10);
+  --shadow-lg: 0 16px 40px rgba(22,51,38,.16);
+
+  --radius-s: 10px;
+  --radius-m: 16px;
+  --radius-l: 24px;
+
+  --font-display: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+
+  --font-scale: 1;
+  --ease: cubic-bezier(.22,1,.36,1);
+}
+
+[data-theme="dark"]{
+  --bg:            #10160F;
+  --bg-elevated:   #1A2119;
+  --bg-sunken:     #0A0E0A;
+  --ink:           #EDE9DC;
+  --ink-soft:      #ADB5A6;
+  --ink-faint:     #6E766A;
+  --line:          #2A322A;
+
+  --green-900:     #DCEEE0;
+  --green-700:     #7FD3A5;
+  --green-600:     #5CBF89;
+  --green-500:     #4AAE79;
+  --green-100:     #1C3327;
+
+  --amber-600:     #F2B255;
+  --amber-500:     #E8A33D;
+  --amber-100:     #3A2E14;
+
+  --coral-500:     #E68268;
+  --coral-100:     #3A2019;
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.3);
+  --shadow-md: 0 8px 24px rgba(0,0,0,.4);
+  --shadow-lg: 0 20px 48px rgba(0,0,0,.5);
+}
+
+*,*::before,*::after{ box-sizing:border-box; }
+html{ -webkit-text-size-adjust:100%; }
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--font-body);
+  font-size:calc(16px * var(--font-scale));
+  line-height:1.5;
+  transition:background .3s var(--ease), color .3s var(--ease);
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{ font-family:var(--font-display); font-weight:700; margin:0; color:var(--ink); }
+p{ margin:0; }
+button{ font-family:inherit; }
+::selection{ background:var(--amber-100); }
+:focus-visible{ outline:2px solid var(--green-600); outline-offset:2px; }
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{ animation-duration:.001ms !important; transition-duration:.001ms !important; }
+}
+
+/* ---------- layout shell ---------- */
+.app{ min-height:100vh; display:flex; }
+
+.sidebar{
+  width:264px; flex-shrink:0; background:var(--bg-elevated);
+  border-right:1px solid var(--line); padding:20px 14px;
+  display:flex; flex-direction:column; gap:4px;
+  position:sticky; top:0; height:100vh; overflow-y:auto;
+}
+.brand{
+  display:flex; align-items:center; gap:10px; padding:6px 10px 22px 10px;
+}
+.brand-mark{
+  width:38px; height:38px; border-radius:11px;
+  background:linear-gradient(135deg,var(--green-600),var(--amber-500));
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-display); font-weight:700; color:#fff; font-size:19px;
+  box-shadow:var(--shadow-sm);
+  flex-shrink:0;
+}
+.brand-text h1{ font-size:19px; letter-spacing:-.01em; }
+.brand-text span{ font-size:11px; color:var(--ink-faint); letter-spacing:.03em; text-transform:uppercase; }
+
+.nav-item{
+  display:flex; align-items:center; gap:12px;
+  padding:11px 12px; border-radius:var(--radius-s);
+  color:var(--ink-soft); cursor:pointer; border:none; background:none;
+  font-size:14.5px; text-align:left; width:100%;
+  transition:background .18s var(--ease), color .18s var(--ease);
+  position:relative;
+}
+.nav-item:hover{ background:var(--bg-sunken); color:var(--ink); }
+.nav-item.active{ background:var(--green-100); color:var(--green-700); font-weight:600; }
+.nav-item .ic{ width:20px; text-align:center; font-size:16px; flex-shrink:0; }
+.nav-item .nav-badge{
+  margin-left:auto; font-size:10.5px; background:var(--amber-500); color:#3A2607;
+  padding:1px 7px; border-radius:99px; font-weight:700;
+}
+
+.sidebar-foot{ margin-top:auto; padding-top:14px; border-top:1px solid var(--line); display:flex; flex-direction:column; gap:8px; }
+.streak-pill{
+  display:flex; align-items:center; gap:8px; padding:10px 12px;
+  background:var(--amber-100); border-radius:var(--radius-s); font-size:13px; color:var(--ink);
+}
+.streak-pill b{ font-family:var(--font-display); font-size:16px; }
+
+.main{ flex:1; min-width:0; }
+.topbar{
+  display:none; align-items:center; justify-content:space-between;
+  padding:14px 16px; background:var(--bg-elevated); border-bottom:1px solid var(--line);
+  position:sticky; top:0; z-index:20;
+}
+.topbar .brand{ padding:0; }
+.icon-btn{
+  width:38px; height:38px; border-radius:10px; border:1px solid var(--line); background:var(--bg-elevated);
+  color:var(--ink); font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transition:background .15s var(--ease), transform .1s var(--ease);
+}
+.icon-btn:hover{ background:var(--bg-sunken); }
+.icon-btn:active{ transform:scale(.94); }
+
+.view{ padding:32px 40px 90px; max-width:1120px; margin:0 auto; animation:fadein .35s var(--ease); }
+@keyframes fadein{ from{ opacity:0; transform:translateY(6px);} to{ opacity:1; transform:none; } }
+
+.view-head{ margin-bottom:26px; }
+.eyebrow{ font-size:12px; text-transform:uppercase; letter-spacing:.09em; color:var(--green-600); font-weight:700; margin-bottom:6px; }
+.view-head h2{ font-size:30px; letter-spacing:-.015em; }
+.view-head p{ color:var(--ink-soft); margin-top:6px; font-size:14.5px; max-width:60ch; }
+
+/* ---------- cards / grid ---------- */
+.card{
+  background:var(--bg-elevated); border:1px solid var(--line); border-radius:var(--radius-m);
+  padding:20px; box-shadow:var(--shadow-sm);
+}
+.grid{ display:grid; gap:16px; }
+.grid-2{ grid-template-columns:repeat(2,1fr); }
+.grid-3{ grid-template-columns:repeat(3,1fr); }
+.grid-4{ grid-template-columns:repeat(4,1fr); }
+@media (max-width:900px){ .grid-4{ grid-template-columns:repeat(2,1fr);} .grid-3{ grid-template-columns:repeat(2,1fr);} }
+
+.stat-card{ display:flex; flex-direction:column; gap:6px; }
+.stat-card .ic{
+  width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+  font-size:17px; margin-bottom:6px;
+}
+.stat-card .num{ font-family:var(--font-display); font-size:28px; letter-spacing:-.02em; }
+.stat-card .label{ font-size:12.5px; color:var(--ink-soft); }
+
+.progress-track{ height:8px; border-radius:99px; background:var(--bg-sunken); overflow:hidden; }
+.progress-fill{ height:100%; border-radius:99px; background:linear-gradient(90deg,var(--green-600),var(--amber-500)); transition:width .5s var(--ease); }
+
+/* ---------- buttons ---------- */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  padding:10px 18px; border-radius:99px; font-size:14px; font-weight:600; cursor:pointer;
+  border:1px solid transparent; transition:transform .12s var(--ease), box-shadow .2s var(--ease), background .18s var(--ease), border-color .18s;
+  white-space:nowrap;
+}
+.btn:active{ transform:scale(.97); }
+.btn-primary{ background:var(--green-600); color:#fff; box-shadow:var(--shadow-sm); }
+.btn-primary:hover{ background:var(--green-700); box-shadow:var(--shadow-md); }
+.btn-amber{ background:var(--amber-500); color:#3A2607; }
+.btn-amber:hover{ background:var(--amber-600); }
+.btn-ghost{ background:transparent; border-color:var(--line); color:var(--ink); }
+.btn-ghost:hover{ background:var(--bg-sunken); }
+.btn-danger{ background:transparent; border-color:var(--coral-500); color:var(--coral-500); }
+.btn-danger:hover{ background:var(--coral-100); }
+.btn-sm{ padding:7px 13px; font-size:13px; }
+.btn:disabled{ opacity:.45; cursor:not-allowed; }
+.btn-block{ width:100%; }
+
+.chip{
+  display:inline-flex; align-items:center; gap:6px; padding:6px 13px; border-radius:99px;
+  border:1px solid var(--line); background:var(--bg-elevated); color:var(--ink-soft);
+  font-size:13px; cursor:pointer; transition:all .15s var(--ease); user-select:none;
+}
+.chip:hover{ border-color:var(--green-500); color:var(--ink); }
+.chip.active{ background:var(--green-600); border-color:var(--green-600); color:#fff; font-weight:600; }
+.chip-row{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; }
+
+input[type=text],input[type=search],select{
+  font-family:inherit; font-size:14px; padding:10px 14px; border-radius:var(--radius-s);
+  border:1px solid var(--line); background:var(--bg-elevated); color:var(--ink); width:100%;
+}
+input[type=text]:focus,input[type=search]:focus{ border-color:var(--green-600); }
+
+/* ---------- word list ---------- */
+.word-row{
+  display:flex; align-items:center; gap:14px; padding:14px 16px; border-radius:var(--radius-s);
+  border:1px solid var(--line); background:var(--bg-elevated); margin-bottom:9px;
+  transition:border-color .15s var(--ease), transform .12s var(--ease);
+}
+.word-row:hover{ border-color:var(--green-500); }
+.word-main{ flex:1; min-width:0; }
+.word-en{ font-family:var(--font-display); font-size:17px; font-weight:700; }
+.word-trans{ color:var(--green-600); font-size:12.5px; font-family:var(--font-mono); margin-left:8px; }
+.word-ru{ color:var(--ink-soft); font-size:13.5px; margin-top:2px; }
+.word-ex{ font-size:12.5px; color:var(--ink-faint); margin-top:5px; font-style:italic; }
+.word-actions{ display:flex; gap:6px; flex-shrink:0; }
+.icon-mini{
+  width:32px; height:32px; border-radius:9px; border:1px solid var(--line); background:none;
+  color:var(--ink-soft); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:14px;
+  transition:all .15s var(--ease);
+}
+.icon-mini:hover{ background:var(--bg-sunken); }
+.icon-mini.on{ background:var(--amber-100); border-color:var(--amber-500); color:var(--amber-600); }
+.icon-mini.learned{ background:var(--green-100); border-color:var(--green-500); color:var(--green-700); }
+.badge-level{
+  font-size:10px; text-transform:uppercase; letter-spacing:.05em; padding:3px 8px; border-radius:99px;
+  background:var(--bg-sunken); color:var(--ink-soft); font-weight:700; flex-shrink:0;
+}
+
+/* ---------- flashcard ---------- */
+.flash-wrap{ display:flex; flex-direction:column; align-items:center; gap:22px; }
+.flash-scene{ width:100%; max-width:460px; height:280px; perspective:1400px; }
+.flash-card{
+  width:100%; height:100%; position:relative; transform-style:preserve-3d;
+  transition:transform .5s var(--ease); cursor:pointer;
+}
+.flash-card.flipped{ transform:rotateY(180deg); }
+.flash-face{
+  position:absolute; inset:0; backface-visibility:hidden; border-radius:var(--radius-l);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:10px;
+  padding:30px; box-shadow:var(--shadow-lg); border:1px solid var(--line);
+}
+.flash-front{ background:var(--bg-elevated); }
+.flash-back{ background:var(--green-700); color:#fff; transform:rotateY(180deg); border:none; }
+.flash-face .en{ font-family:var(--font-display); font-size:30px; font-weight:700; }
+.flash-face .tr{ font-family:var(--font-mono); color:var(--green-600); font-size:14px; }
+.flash-back .tr{ color:var(--amber-100); }
+.flash-face .ru{ font-size:18px; }
+.flash-face .ex{ font-size:13px; opacity:.85; margin-top:8px; max-width:34ch; }
+.flash-hint{ font-size:12px; color:var(--ink-faint); }
+.flash-controls{ display:flex; gap:10px; }
+
+/* ---------- tests ---------- */
+.test-progress{ display:flex; align-items:center; gap:12px; margin-bottom:22px; }
+.test-progress .progress-track{ flex:1; }
+.test-progress span{ font-size:13px; color:var(--ink-soft); white-space:nowrap; }
+.test-q{ text-align:center; padding:10px 0 26px; }
+.test-q .prompt-label{ font-size:12.5px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.06em; margin-bottom:10px; }
+.test-q .prompt{ font-family:var(--font-display); font-size:28px; font-weight:700; }
+.test-q .prompt .tr{ font-family:var(--font-mono); font-size:14px; color:var(--green-600); display:block; margin-top:6px; }
+.opt-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; max-width:560px; margin:0 auto; }
+@media (max-width:600px){ .opt-grid{ grid-template-columns:1fr; } }
+.opt-btn{
+  padding:15px 16px; border-radius:var(--radius-s); border:1.5px solid var(--line); background:var(--bg-elevated);
+  cursor:pointer; font-size:15px; text-align:left; transition:all .15s var(--ease); color:var(--ink);
+}
+.opt-btn:hover{ border-color:var(--green-500); }
+.opt-btn.correct{ border-color:var(--green-600); background:var(--green-100); color:var(--green-700); font-weight:700; }
+.opt-btn.wrong{ border-color:var(--coral-500); background:var(--coral-100); color:var(--coral-500); font-weight:700; }
+.opt-btn:disabled{ cursor:default; }
+.input-answer{ max-width:340px; margin:0 auto; text-align:center; font-size:18px; padding:14px; }
+.result-hero{ text-align:center; padding:40px 20px; }
+.result-hero .num{ font-family:var(--font-display); font-size:64px; }
+
+/* ---------- grammar ---------- */
+.gram-list{ display:flex; flex-direction:column; gap:10px; }
+.gram-item{
+  border:1px solid var(--line); border-radius:var(--radius-m); background:var(--bg-elevated); overflow:hidden;
+}
+.gram-item summary{
+  padding:16px 18px; cursor:pointer; font-family:var(--font-display); font-weight:700; font-size:16px;
+  display:flex; justify-content:space-between; align-items:center; list-style:none;
+}
+.gram-item summary::-webkit-details-marker{ display:none; }
+.gram-item summary::after{ content:'+'; font-size:20px; color:var(--ink-faint); transition:transform .2s var(--ease); }
+.gram-item[open] summary::after{ transform:rotate(45deg); }
+.gram-body{ padding:0 18px 20px; color:var(--ink-soft); font-size:14.5px; }
+.gram-body h5{ color:var(--ink); font-size:13px; text-transform:uppercase; letter-spacing:.05em; margin:14px 0 8px; }
+.gram-body .example-line{ background:var(--bg-sunken); border-radius:8px; padding:8px 12px; margin-bottom:6px; font-family:var(--font-mono); font-size:13px; }
+.gram-ex-btn{ margin-top:14px; }
+
+/* ---------- speaking / dialogues ---------- */
+.dialogue{ background:var(--bg-elevated); border:1px solid var(--line); border-radius:var(--radius-m); padding:20px; margin-bottom:14px; }
+.dialogue h4{ font-size:16px; margin-bottom:12px; }
+.dline{ display:flex; gap:10px; margin-bottom:10px; align-items:flex-start; }
+.dline .who{
+  width:30px; height:30px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:700; color:#fff;
+}
+.dline .who.a{ background:var(--green-600); }
+.dline .who.b{ background:var(--amber-500); color:#3A2607; }
+.dline .txt{ padding-top:3px; }
+.dline .en{ font-size:14.5px; }
+.dline .ru{ font-size:12.5px; color:var(--ink-faint); margin-top:2px; }
+
+.phrase-card{ background:var(--bg-elevated); border:1px solid var(--line); border-radius:var(--radius-s); padding:14px 16px; margin-bottom:8px; display:flex; gap:12px; align-items:center; }
+.phrase-card .txt{ flex:1; }
+.phrase-card .en{ font-weight:700; font-family:var(--font-display); font-size:15.5px; }
+.phrase-card .ru{ font-size:13px; color:var(--ink-soft); }
+.phrase-card .note{ font-size:11.5px; color:var(--amber-600); margin-top:2px; }
+
+/* ---------- achievements ---------- */
+.medal{
+  display:flex; flex-direction:column; align-items:center; gap:8px; padding:20px 12px; text-align:center;
+  border-radius:var(--radius-m); border:1px solid var(--line); background:var(--bg-elevated);
+  opacity:.4; filter:grayscale(1);
+}
+.medal.unlocked{ opacity:1; filter:none; box-shadow:var(--shadow-sm); border-color:var(--amber-500); }
+.medal .ic{ width:52px; height:52px; border-radius:50%; background:linear-gradient(135deg,var(--amber-500),var(--coral-500)); display:flex; align-items:center; justify-content:center; font-size:24px; color:#fff; }
+.medal .t{ font-weight:700; font-size:13px; }
+.medal .d{ font-size:11.5px; color:var(--ink-soft); }
+.xp-bar-wrap{ display:flex; align-items:center; gap:14px; }
+.level-badge{
+  width:56px; height:56px; border-radius:16px; background:linear-gradient(135deg,var(--green-600),var(--green-700));
+  color:#fff; display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:22px; font-weight:700; flex-shrink:0;
+}
+
+/* ---------- calendar heatmap ---------- */
+.heatmap{ display:grid; grid-template-columns:repeat(14,1fr); gap:5px; }
+.heat-cell{ aspect-ratio:1; border-radius:4px; background:var(--bg-sunken); }
+.heat-cell[data-lvl="1"]{ background:var(--green-100); }
+.heat-cell[data-lvl="2"]{ background:var(--green-500); opacity:.6; }
+.heat-cell[data-lvl="3"]{ background:var(--green-600); }
+.heat-cell[data-lvl="4"]{ background:var(--green-700); }
+
+/* ---------- settings ---------- */
+.setting-row{ display:flex; align-items:center; justify-content:space-between; padding:16px 0; border-bottom:1px solid var(--line); gap:16px; }
+.setting-row:last-child{ border-bottom:none; }
+.setting-row .t{ font-weight:600; font-size:14.5px; }
+.setting-row .d{ font-size:12.5px; color:var(--ink-soft); margin-top:2px; }
+.switch{ position:relative; width:46px; height:26px; flex-shrink:0; }
+.switch input{ opacity:0; width:0; height:0; }
+.switch .track{ position:absolute; inset:0; background:var(--bg-sunken); border:1px solid var(--line); border-radius:99px; cursor:pointer; transition:.2s; }
+.switch .track::before{ content:''; position:absolute; width:18px; height:18px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.2s var(--ease); box-shadow:var(--shadow-sm); }
+.switch input:checked + .track{ background:var(--green-600); border-color:var(--green-600); }
+.switch input:checked + .track::before{ transform:translateX(20px); }
+.seg{ display:flex; border:1px solid var(--line); border-radius:99px; overflow:hidden; }
+.seg button{ border:none; background:none; padding:8px 14px; font-size:13px; cursor:pointer; color:var(--ink-soft); }
+.seg button.active{ background:var(--green-600); color:#fff; }
+#lang-switch button{ flex:1; font-weight:700; padding:9px 10px; }
+.lang-fab{
+  position:fixed; top:16px; right:16px; z-index:150;
+  background:var(--bg-elevated); box-shadow:var(--shadow-lg); border-radius:99px;
+}
+.lang-fab button{ font-weight:700; }
+@media (max-width:880px){ .lang-fab{ top:auto; bottom:16px; right:16px; } }
+
+/* ---------- toast ---------- */
+#toast-host{ position:fixed; bottom:20px; right:20px; z-index:200; display:flex; flex-direction:column; gap:10px; align-items:flex-end; }
+.toast{
+  background:var(--green-700); color:#fff; padding:13px 18px; border-radius:var(--radius-s); box-shadow:var(--shadow-lg);
+  font-size:13.5px; display:flex; align-items:center; gap:10px; animation:toastin .35s var(--ease); max-width:320px;
+}
+.toast.warn{ background:var(--coral-500); }
+.toast.info{ background:var(--ink); }
+@keyframes toastin{ from{ opacity:0; transform:translateY(10px) scale(.95);} to{ opacity:1; transform:none; } }
+
+/* ---------- misc ---------- */
+.empty{ text-align:center; padding:50px 20px; color:var(--ink-faint); }
+.empty .ic{ font-size:34px; margin-bottom:10px; }
+.section-title{ font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft); font-weight:700; margin:26px 0 12px; }
+.section-title:first-child{ margin-top:0; }
+.two-col{ display:grid; grid-template-columns:1.3fr 1fr; gap:20px; }
+@media (max-width:900px){ .two-col{ grid-template-columns:1fr; } }
+.hidden{ display:none !important; }
+
+@media (max-width:880px){
+  .sidebar{ display:none; }
+  .sidebar.open{
+    display:flex; position:fixed; z-index:100; height:100vh; box-shadow:var(--shadow-lg); animation:slidein .25s var(--ease);
+  }
+  @keyframes slidein{ from{ transform:translateX(-100%);} to{ transform:none; } }
+  .topbar{ display:flex; }
+  .view{ padding:20px 16px 80px; }
+  .grid-2,.grid-3{ grid-template-columns:1fr 1fr; }
+  .view-head h2{ font-size:24px; }
+  #scrim{ display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:90; }
+  #scrim.show{ display:block; }
+}
+@media (max-width:480px){
+  .grid-2,.grid-3,.grid-4{ grid-template-columns:1fr 1fr; }
+}/* ---------- чат с ИИ-репетитором ---------- */
+.chat-shell{ display:flex; flex-direction:column; height:calc(100vh - 230px); min-height:420px; }
+.chat-messages{ flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:14px; padding:6px 4px 16px; }
+.chat-bubble-row{ display:flex; gap:10px; max-width:78%; }
+.chat-bubble-row.user{ align-self:flex-end; flex-direction:row-reverse; }
+.chat-avatar{
+  width:30px; height:30px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center;
+  font-size:14px; color:#fff; background:var(--green-600);
+}
+.chat-bubble-row.user .chat-avatar{ background:var(--amber-500); color:#3A2607; }
+.chat-bubble{
+  padding:12px 15px; border-radius:16px; font-size:14.5px; line-height:1.55; background:var(--bg-elevated);
+  border:1px solid var(--line); border-top-left-radius:4px;
+}
+.chat-bubble-row.user .chat-bubble{ background:var(--green-600); color:#fff; border:none; border-top-left-radius:16px; border-top-right-radius:4px; }
+.chat-bubble .note{ margin-top:8px; padding-top:8px; border-top:1px dashed var(--line); font-size:12px; color:var(--ink-faint); }
+.chat-bubble-row.user .chat-bubble .note{ border-top-color:rgba(255,255,255,.3); color:rgba(255,255,255,.75); }
+.chat-bubble-actions{ display:flex; gap:6px; margin-top:8px; }
+.typing-row{ display:flex; gap:10px; align-self:flex-start; }
+.typing-dots{ display:flex; align-items:center; gap:4px; padding:14px 16px; background:var(--bg-elevated); border:1px solid var(--line); border-radius:16px; border-top-left-radius:4px; }
+.typing-dots span{ width:6px; height:6px; border-radius:50%; background:var(--ink-faint); animation:blinkdot 1.2s infinite ease-in-out; }
+.typing-dots span:nth-child(2){ animation-delay:.2s; }
+.typing-dots span:nth-child(3){ animation-delay:.4s; }
+@keyframes blinkdot{ 0%,80%,100%{ opacity:.25; transform:scale(.8);} 40%{ opacity:1; transform:scale(1);} }
+.chat-input-bar{ display:flex; gap:8px; align-items:flex-end; padding-top:14px; border-top:1px solid var(--line); }
+.chat-input-bar textarea{
+  flex:1; resize:none; font-family:inherit; font-size:14.5px; padding:12px 14px; border-radius:var(--radius-m);
+  border:1px solid var(--line); background:var(--bg-elevated); color:var(--ink); max-height:120px; min-height:46px;
+}
+.chat-input-bar textarea:focus{ border-color:var(--green-600); }
+.send-btn{
+  width:46px; height:46px; border-radius:50%; border:none; background:var(--green-600); color:#fff; font-size:17px;
+  cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:background .15s var(--ease), transform .1s var(--ease);
+}
+.send-btn:hover{ background:var(--green-700); }
+.send-btn:active{ transform:scale(.93); }
+.send-btn:disabled{ opacity:.4; cursor:not-allowed; }
+.mic-btn.recording{ background:var(--coral-500); border-color:var(--coral-500); color:#fff; animation:pulse 1.2s infinite; }
+@keyframes pulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(217,99,76,.5);} 50%{ box-shadow:0 0 0 8px rgba(217,99,76,0);} }
+.chat-empty{ text-align:center; color:var(--ink-faint); padding:40px 20px; }
+.chat-empty .ic{ font-size:32px; margin-bottom:10px; }
+</style>
+</head>
+<body>
+<div id="scrim" onclick="closeSidebar()"></div>
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-mark">E</div>
+      <div class="brand-text"><h1>EngUp</h1><span id="brand-sub">Разговорный английский</span></div>
+    </div>
+    <div class="seg" id="lang-switch" style="margin:0 10px 18px;"></div>
+    <nav id="nav"></nav>
+    <div class="sidebar-foot">
+      <div class="streak-pill">🔥 <span>Серия: <b id="streak-count">0</b> дн.</span></div>
+      <button class="btn btn-ghost btn-block" onclick="toggleTheme()">
+        <span id="theme-icon">🌙</span> <span id="theme-label">Тёмная тема</span>
+      </button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <button class="icon-btn" onclick="openSidebar()">☰</button>
+      <div class="seg" id="lang-switch-mobile" style="flex-shrink:0;"></div>
+      <button class="icon-btn" onclick="toggleTheme()">🌙</button>
+    </div>
+    <div id="view" class="view"></div>
+  </main>
+</div>
+<div id="toast-host"></div>
+<div class="seg lang-fab" id="lang-fab"></div>
+<script>
+/* ============================================================
+   EngUp — данные и логика приложения
+   ============================================================ */
+
+/* ---------- utils ---------- */
+const $  = (sel,root=document)=>root.querySelector(sel);
+const $$ = (sel,root=document)=>[...root.querySelectorAll(sel)];
+const uid = ()=> Math.random().toString(36).slice(2,9);
+const todayKey = (d=new Date())=> d.toISOString().slice(0,10);
+const shuffle = arr => { const a=[...arr]; for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+const speak = (text, lang)=>{
+  if(!('speechSynthesis' in window)) { toast('Синтез речи не поддерживается в этом браузере','warn'); return; }
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = lang || (STATE.learnLang === 'kk' ? 'kk-KZ' : 'en-US');
+  u.rate = 0.92;
+  window.speechSynthesis.speak(u);
+};
+
+function toast(msg, kind='ok', icon){
+  const host = $('#toast-host');
+  const el = document.createElement('div');
+  el.className = 'toast' + (kind==='warn'?' warn':kind==='info'?' info':'');
+  el.innerHTML = `<span>${icon || (kind==='warn'?'⚠️':kind==='info'?'ℹ️':'✅')}</span><span>${msg}</span>`;
+  host.appendChild(el);
+  setTimeout(()=>{ el.style.transition='opacity .3s, transform .3s'; el.style.opacity='0'; el.style.transform='translateY(8px)'; setTimeout(()=>el.remove(),300); }, 3200);
+}
+
+/* ---------- категории словаря ---------- */
+const CATEGORIES = [
+  {id:'beginner',     name:'Начальный',      ic:'🌱'},
+  {id:'intermediate', name:'Средний',        ic:'🌿'},
+  {id:'advanced',     name:'Продвинутый',    ic:'🌳'},
+  {id:'travel',       name:'Путешествия',    ic:'✈️'},
+  {id:'work',         name:'Работа',         ic:'💼'},
+  {id:'food',         name:'Еда',            ic:'🍔'},
+  {id:'tech',         name:'Техника',        ic:'💻'},
+  {id:'daily',        name:'Повседневность', ic:'🏠'},
+  {id:'slang',        name:'Сленг и разговорный',  ic:'🗣️'},
+];
+
+/* ---------- словарь: {e:англ, t:транскрипция, r:перевод, x:пример, xr:перевод примера, c:категория} ---------- */
+const VOCAB_EN = [
+// ===== BEGINNER =====
+{e:"house",t:"/haʊs/",r:"дом",x:"We bought a small house near the lake.",xr:"Мы купили небольшой дом у озера.",c:"beginner"},
+{e:"water",t:"/ˈwɔːtər/",r:"вода",x:"Can I have a glass of water?",xr:"Можно мне стакан воды?",c:"beginner"},
+{e:"friend",t:"/frend/",r:"друг",x:"She is my best friend.",xr:"Она моя лучшая подруга.",c:"beginner"},
+{e:"happy",t:"/ˈhæpi/",r:"счастливый",x:"He looks really happy today.",xr:"Он выглядит очень счастливым сегодня.",c:"beginner"},
+{e:"family",t:"/ˈfæməli/",r:"семья",x:"My family lives in Almaty.",xr:"Моя семья живёт в Алматы.",c:"beginner"},
+{e:"school",t:"/skuːl/",r:"школа",x:"The kids walk to school together.",xr:"Дети вместе идут в школу пешком.",c:"beginner"},
+{e:"today",t:"/təˈdeɪ/",r:"сегодня",x:"What are you doing today?",xr:"Чем ты занимаешься сегодня?",c:"beginner"},
+{e:"morning",t:"/ˈmɔːrnɪŋ/",r:"утро",x:"I always drink coffee in the morning.",xr:"Я всегда пью кофе по утрам.",c:"beginner"},
+{e:"help",t:"/help/",r:"помощь / помогать",x:"Can you help me carry this?",xr:"Ты можешь помочь мне это донести?",c:"beginner"},
+{e:"work",t:"/wɜːrk/",r:"работа / работать",x:"I go to work by bus.",xr:"Я езжу на работу на автобусе.",c:"beginner"},
+{e:"eat",t:"/iːt/",r:"есть, кушать",x:"Let's eat before the movie starts.",xr:"Давай поедим перед началом фильма.",c:"beginner"},
+{e:"sleep",t:"/sliːp/",r:"спать",x:"I didn't sleep well last night.",xr:"Я плохо спал прошлой ночью.",c:"beginner"},
+{e:"buy",t:"/baɪ/",r:"покупать",x:"We need to buy some bread.",xr:"Нам нужно купить хлеб.",c:"beginner"},
+{e:"walk",t:"/wɔːk/",r:"ходить пешком",x:"They walk the dog every evening.",xr:"Они выгуливают собаку каждый вечер.",c:"beginner"},
+{e:"love",t:"/lʌv/",r:"любить / любовь",x:"I love this song so much.",xr:"Мне очень нравится эта песня.",c:"beginner"},
+{e:"big",t:"/bɪɡ/",r:"большой",x:"They live in a big apartment.",xr:"Они живут в большой квартире.",c:"beginner"},
+{e:"small",t:"/smɔːl/",r:"маленький",x:"The kitten is very small.",xr:"Котёнок очень маленький.",c:"beginner"},
+{e:"cold",t:"/koʊld/",r:"холодный",x:"It's really cold outside today.",xr:"Сегодня на улице очень холодно.",c:"beginner"},
+{e:"hot",t:"/hɑːt/",r:"горячий, жаркий",x:"Be careful, the plate is hot.",xr:"Осторожно, тарелка горячая.",c:"beginner"},
+{e:"easy",t:"/ˈiːzi/",r:"лёгкий, простой",x:"This exercise is pretty easy.",xr:"Это упражнение довольно простое.",c:"beginner"},
+{e:"hard",t:"/hɑːrd/",r:"трудный / твёрдый",x:"The test was harder than I expected.",xr:"Тест оказался труднее, чем я ожидал.",c:"beginner"},
+{e:"open",t:"/ˈoʊpən/",r:"открывать",x:"Could you open the window, please?",xr:"Не мог бы ты открыть окно, пожалуйста?",c:"beginner"},
+{e:"close",t:"/kloʊz/",r:"закрывать",x:"Please close the door behind you.",xr:"Пожалуйста, закрой за собой дверь.",c:"beginner"},
+{e:"begin",t:"/bɪˈɡɪn/",r:"начинать",x:"The meeting will begin at noon.",xr:"Встреча начнётся в полдень.",c:"beginner"},
+{e:"child",t:"/tʃaɪld/",r:"ребёнок",x:"Every child deserves a good education.",xr:"Каждый ребёнок заслуживает хорошего образования.",c:"beginner"},
+{e:"money",t:"/ˈmʌni/",r:"деньги",x:"He doesn't have much money right now.",xr:"У него сейчас немного денег.",c:"beginner"},
+{e:"time",t:"/taɪm/",r:"время",x:"We don't have much time left.",xr:"У нас осталось мало времени.",c:"beginner"},
+{e:"day",t:"/deɪ/",r:"день",x:"It was a long, tiring day.",xr:"Это был долгий, утомительный день.",c:"beginner"},
+{e:"night",t:"/naɪt/",r:"ночь",x:"The city looks amazing at night.",xr:"Город прекрасно выглядит ночью.",c:"beginner"},
+{e:"good",t:"/ɡʊd/",r:"хороший",x:"That's a really good idea.",xr:"Это действительно хорошая идея.",c:"beginner"},
+{e:"bad",t:"/bæd/",r:"плохой",x:"I have some bad news for you.",xr:"У меня для тебя плохие новости.",c:"beginner"},
+
+// ===== INTERMEDIATE =====
+{e:"achieve",t:"/əˈtʃiːv/",r:"достигать",x:"She achieved her goal after years of effort.",xr:"Она достигла своей цели после многолетних усилий.",c:"intermediate"},
+{e:"consider",t:"/kənˈsɪdər/",r:"рассматривать, считать",x:"We should consider all the options first.",xr:"Сначала нам стоит рассмотреть все варианты.",c:"intermediate"},
+{e:"opportunity",t:"/ˌɑːpərˈtuːnəti/",r:"возможность",x:"This job is a great opportunity for me.",xr:"Эта работа — отличная возможность для меня.",c:"intermediate"},
+{e:"improve",t:"/ɪmˈpruːv/",r:"улучшать",x:"I want to improve my English skills.",xr:"Я хочу улучшить свой английский.",c:"intermediate"},
+{e:"decision",t:"/dɪˈsɪʒn/",r:"решение",x:"It was a difficult decision to make.",xr:"Это было трудное решение.",c:"intermediate"},
+{e:"experience",t:"/ɪkˈspɪriəns/",r:"опыт",x:"He has a lot of experience in this field.",xr:"У него большой опыт в этой сфере.",c:"intermediate"},
+{e:"available",t:"/əˈveɪləbl/",r:"доступный",x:"Is this seat available?",xr:"Это место свободно?",c:"intermediate"},
+{e:"suggest",t:"/səˈdʒest/",r:"предлагать",x:"I suggest we leave earlier tomorrow.",xr:"Предлагаю выйти завтра пораньше.",c:"intermediate"},
+{e:"expect",t:"/ɪkˈspekt/",r:"ожидать",x:"We didn't expect such a warm welcome.",xr:"Мы не ожидали такого тёплого приёма.",c:"intermediate"},
+{e:"encourage",t:"/ɪnˈkɜːrɪdʒ/",r:"поощрять, ободрять",x:"Her teacher encouraged her to keep writing.",xr:"Её учитель поощрял её продолжать писать.",c:"intermediate"},
+{e:"impact",t:"/ˈɪmpækt/",r:"влияние",x:"The new policy had a big impact on sales.",xr:"Новая политика сильно повлияла на продажи.",c:"intermediate"},
+{e:"purpose",t:"/ˈpɜːrpəs/",r:"цель, назначение",x:"What's the purpose of this meeting?",xr:"Какова цель этой встречи?",c:"intermediate"},
+{e:"reasonable",t:"/ˈriːznəbl/",r:"разумный, приемлемый",x:"The price seems pretty reasonable to me.",xr:"Цена кажется мне вполне разумной.",c:"intermediate"},
+{e:"relationship",t:"/rɪˈleɪʃnʃɪp/",r:"отношения",x:"They have a strong relationship built on trust.",xr:"У них крепкие отношения, основанные на доверии.",c:"intermediate"},
+{e:"situation",t:"/ˌsɪtʃuˈeɪʃn/",r:"ситуация",x:"We need to handle this situation carefully.",xr:"Нам нужно аккуратно разобраться с этой ситуацией.",c:"intermediate"},
+{e:"advantage",t:"/ədˈvæntɪdʒ/",r:"преимущество",x:"Speaking two languages gives you a big advantage.",xr:"Знание двух языков даёт большое преимущество.",c:"intermediate"},
+{e:"flexible",t:"/ˈfleksəbl/",r:"гибкий",x:"My work schedule is pretty flexible.",xr:"У меня довольно гибкий рабочий график.",c:"intermediate"},
+{e:"complain",t:"/kəmˈpleɪn/",r:"жаловаться",x:"He always complains about the weather.",xr:"Он всегда жалуется на погоду.",c:"intermediate"},
+{e:"eventually",t:"/ɪˈventʃuəli/",r:"в конце концов",x:"Eventually, we found the right solution.",xr:"В конце концов мы нашли правильное решение.",c:"intermediate"},
+{e:"handle",t:"/ˈhændl/",r:"справляться",x:"She handles stress really well.",xr:"Она очень хорошо справляется со стрессом.",c:"intermediate"},
+{e:"assume",t:"/əˈsuːm/",r:"предполагать",x:"I assumed you already knew about the change.",xr:"Я предполагал, что ты уже знаешь об изменении.",c:"intermediate"},
+{e:"reliable",t:"/rɪˈlaɪəbl/",r:"надёжный",x:"He's a reliable friend, always on time.",xr:"Он надёжный друг, всегда приходит вовремя.",c:"intermediate"},
+{e:"in charge of",t:"/ɪn tʃɑːrdʒ ʌv/",r:"отвечающий за",x:"Who's in charge of this project?",xr:"Кто отвечает за этот проект?",c:"intermediate"},
+{e:"convince",t:"/kənˈvɪns/",r:"убеждать",x:"It took a while to convince her.",xr:"Потребовалось время, чтобы её убедить.",c:"intermediate"},
+{e:"struggle",t:"/ˈstrʌɡl/",r:"бороться, испытывать трудности",x:"Many students struggle with grammar at first.",xr:"Многие студенты сначала испытывают трудности с грамматикой.",c:"intermediate"},
+
+// ===== ADVANCED =====
+{e:"nevertheless",t:"/ˌnevərðəˈles/",r:"тем не менее",x:"The plan was risky; nevertheless, they went ahead.",xr:"План был рискованным, тем не менее они продолжили.",c:"advanced"},
+{e:"ambiguous",t:"/æmˈbɪɡjuəs/",r:"двусмысленный",x:"His answer was deliberately ambiguous.",xr:"Его ответ был намеренно двусмысленным.",c:"advanced"},
+{e:"comprehensive",t:"/ˌkɑːmprɪˈhensɪv/",r:"всесторонний, полный",x:"We need a comprehensive review of the budget.",xr:"Нам нужен всесторонний анализ бюджета.",c:"advanced"},
+{e:"inevitable",t:"/ɪnˈevɪtəbl/",r:"неизбежный",x:"Change was inevitable after the merger.",xr:"Изменения были неизбежны после слияния компаний.",c:"advanced"},
+{e:"resilient",t:"/rɪˈzɪliənt/",r:"стойкий, жизнестойкий",x:"Kids can be surprisingly resilient.",xr:"Дети могут быть удивительно стойкими.",c:"advanced"},
+{e:"controversial",t:"/ˌkɑːntrəˈvɜːrʃl/",r:"спорный, противоречивый",x:"It's a controversial topic among economists.",xr:"Это спорная тема среди экономистов.",c:"advanced"},
+{e:"underestimate",t:"/ˌʌndərˈestɪmeɪt/",r:"недооценивать",x:"Never underestimate how hard this will be.",xr:"Никогда не недооценивай, насколько это будет сложно.",c:"advanced"},
+{e:"discrepancy",t:"/dɪˈskrepənsi/",r:"расхождение, несоответствие",x:"There's a discrepancy between the two reports.",xr:"Между этими двумя отчётами есть расхождение.",c:"advanced"},
+{e:"unprecedented",t:"/ʌnˈpresɪdentɪd/",r:"беспрецедентный",x:"The company saw unprecedented growth last year.",xr:"В прошлом году компания показала беспрецедентный рост.",c:"advanced"},
+{e:"meticulous",t:"/məˈtɪkjələs/",r:"дотошный, скрупулёзный",x:"She's meticulous about every small detail.",xr:"Она очень скрупулёзна в каждой мелочи.",c:"advanced"},
+{e:"substantial",t:"/səbˈstænʃl/",r:"существенный, значительный",x:"They made substantial progress this quarter.",xr:"В этом квартале они добились существенного прогресса.",c:"advanced"},
+{e:"elaborate",t:"/ɪˈlæbərət/",r:"сложный, детальный",x:"He gave an elaborate explanation of the process.",xr:"Он дал подробное объяснение процесса.",c:"advanced"},
+{e:"skeptical",t:"/ˈskeptɪkl/",r:"скептичный",x:"I'm a bit skeptical about this new plan.",xr:"Я немного скептически отношусь к этому новому плану.",c:"advanced"},
+{e:"prevalent",t:"/ˈprevələnt/",r:"распространённый, преобладающий",x:"This kind of scam is very prevalent online.",xr:"Такой вид мошенничества очень распространён в интернете.",c:"advanced"},
+{e:"deteriorate",t:"/dɪˈtɪriəreɪt/",r:"ухудшаться",x:"His health began to deteriorate rapidly.",xr:"Его здоровье начало быстро ухудшаться.",c:"advanced"},
+{e:"consensus",t:"/kənˈsensəs/",r:"консенсус, единое мнение",x:"The committee reached a consensus after hours of debate.",xr:"Комитет пришёл к единому мнению после часов дебатов.",c:"advanced"},
+{e:"integrity",t:"/ɪnˈteɡrəti/",r:"честность, целостность",x:"He's known for his integrity and honesty.",xr:"Он известен своей честностью и порядочностью.",c:"advanced"},
+{e:"plausible",t:"/ˈplɔːzəbl/",r:"правдоподобный",x:"That's a plausible explanation, actually.",xr:"На самом деле, это правдоподобное объяснение.",c:"advanced"},
+
+// ===== TRAVEL =====
+{e:"boarding pass",t:"/ˈbɔːrdɪŋ pæs/",r:"посадочный талон",x:"Please have your boarding pass ready.",xr:"Пожалуйста, приготовьте посадочный талон.",c:"travel"},
+{e:"luggage",t:"/ˈlʌɡɪdʒ/",r:"багаж",x:"My luggage didn't arrive on the carousel.",xr:"Мой багаж не приехал на ленту.",c:"travel"},
+{e:"layover",t:"/ˈleɪoʊvər/",r:"пересадка (в аэропорту)",x:"We have a three-hour layover in Istanbul.",xr:"У нас трёхчасовая пересадка в Стамбуле.",c:"travel"},
+{e:"customs",t:"/ˈkʌstəmz/",r:"таможня",x:"It took forever to get through customs.",xr:"Прохождение таможни заняло вечность.",c:"travel"},
+{e:"itinerary",t:"/aɪˈtɪnəreri/",r:"маршрут поездки",x:"Can you send me the full itinerary?",xr:"Можешь прислать мне полный маршрут поездки?",c:"travel"},
+{e:"check in",t:"/tʃek ɪn/",r:"заселиться / зарегистрироваться",x:"We can't check in before 3 PM.",xr:"Мы не можем заселиться раньше 15:00.",c:"travel"},
+{e:"reservation",t:"/ˌrezərˈveɪʃn/",r:"бронирование",x:"I have a reservation under the name Akim.",xr:"У меня бронь на имя Аким.",c:"travel"},
+{e:"currency exchange",t:"/ˈkɜːrənsi ɪksˈtʃeɪndʒ/",r:"обмен валюты",x:"Where's the nearest currency exchange?",xr:"Где ближайший обменник валюты?",c:"travel"},
+{e:"platform",t:"/ˈplætfɔːrm/",r:"платформа (на вокзале)",x:"The train leaves from platform 4.",xr:"Поезд отправляется с платформы 4.",c:"travel"},
+{e:"souvenir",t:"/ˌsuːvəˈnɪr/",r:"сувенир",x:"I bought a few souvenirs for my family.",xr:"Я купил несколько сувениров для семьи.",c:"travel"},
+{e:"tourist trap",t:"/ˈtʊrɪst træp/",r:"туристическая ловушка (переплата)",x:"That restaurant is a total tourist trap.",xr:"Этот ресторан — настоящая туристическая ловушка.",c:"travel"},
+{e:"jet lag",t:"/dʒet læɡ/",r:"смена часовых поясов, усталость от перелёта",x:"I'm still fighting jet lag after the flight.",xr:"Я всё ещё борюсь с джетлагом после перелёта.",c:"travel"},
+{e:"round trip",t:"/raʊnd trɪp/",r:"поездка туда и обратно",x:"A round trip ticket is cheaper than two one-ways.",xr:"Билет туда-обратно дешевле двух билетов в одну сторону.",c:"travel"},
+{e:"accommodation",t:"/əˌkɑːməˈdeɪʃn/",r:"размещение, жильё",x:"We booked our accommodation two months in advance.",xr:"Мы забронировали жильё за два месяца.",c:"travel"},
+{e:"local cuisine",t:"/ˈloʊkl kwɪˈziːn/",r:"местная кухня",x:"Trying the local cuisine is my favorite part of travel.",xr:"Пробовать местную кухню — моя любимая часть путешествий.",c:"travel"},
+{e:"off the beaten path",t:"/ɔːf ðə ˈbiːtn pæθ/",r:"не туристическое место, глубинка",x:"We found a small village off the beaten path.",xr:"Мы нашли небольшую деревню в стороне от туристических троп.",c:"travel"},
+{e:"visa on arrival",t:"/ˈviːzə ɑːn əˈraɪvl/",r:"виза по прибытии",x:"Citizens of some countries get a visa on arrival.",xr:"Гражданам некоторых стран визу выдают по прибытии.",c:"travel"},
+{e:"gate",t:"/ɡeɪt/",r:"выход на посадку",x:"Our gate just changed to B12.",xr:"Наш выход на посадку сменился на B12.",c:"travel"},
+
+// ===== WORK =====
+{e:"deadline",t:"/ˈdedlaɪn/",r:"крайний срок",x:"The deadline for this report is Friday.",xr:"Крайний срок сдачи отчёта — пятница.",c:"work"},
+{e:"colleague",t:"/ˈkɑːliːɡ/",r:"коллега",x:"I discussed it with a colleague this morning.",xr:"Я обсудил это с коллегой сегодня утром.",c:"work"},
+{e:"promotion",t:"/prəˈmoʊʃn/",r:"повышение",x:"She got a promotion after two years.",xr:"Она получила повышение через два года.",c:"work"},
+{e:"salary",t:"/ˈsæləri/",r:"зарплата",x:"They offered a competitive salary.",xr:"Они предложили конкурентную зарплату.",c:"work"},
+{e:"resume",t:"/ˈrezəmeɪ/",r:"резюме",x:"Update your resume before applying.",xr:"Обнови резюме перед подачей заявки.",c:"work"},
+{e:"interview",t:"/ˈɪntərvjuː/",r:"собеседование",x:"The interview went better than I expected.",xr:"Собеседование прошло лучше, чем я ожидал.",c:"work"},
+{e:"meeting",t:"/ˈmiːtɪŋ/",r:"встреча, совещание",x:"Let's move the meeting to 2 PM.",xr:"Давайте перенесём встречу на 14:00.",c:"work"},
+{e:"workload",t:"/ˈwɜːrkloʊd/",r:"объём работы",x:"My workload has doubled this month.",xr:"Мой объём работы удвоился в этом месяце.",c:"work"},
+{e:"remote work",t:"/rɪˈmoʊt wɜːrk/",r:"удалённая работа",x:"Remote work gave him more flexibility.",xr:"Удалённая работа дала ему больше гибкости.",c:"work"},
+{e:"supervisor",t:"/ˈsuːpərvaɪzər/",r:"руководитель",x:"Ask your supervisor for approval first.",xr:"Сначала спроси разрешения у своего руководителя.",c:"work"},
+{e:"overtime",t:"/ˈoʊvərtaɪm/",r:"сверхурочные",x:"He worked overtime to finish the project.",xr:"Он работал сверхурочно, чтобы закончить проект.",c:"work"},
+{e:"negotiate",t:"/nɪˈɡoʊʃieɪt/",r:"вести переговоры",x:"We need to negotiate a better price.",xr:"Нам нужно договориться о лучшей цене.",c:"work"},
+{e:"quit",t:"/kwɪt/",r:"увольняться, бросать",x:"She decided to quit her job last month.",xr:"В прошлом месяце она решила уволиться.",c:"work"},
+{e:"freelancer",t:"/ˈfriːlænsər/",r:"фрилансер",x:"He's been a freelancer for five years now.",xr:"Он уже пять лет работает фрилансером.",c:"work"},
+{e:"burnout",t:"/ˈbɜːrnaʊt/",r:"выгорание",x:"I'm close to burnout after this project.",xr:"Я близок к выгоранию после этого проекта.",c:"work"},
+{e:"touch base",t:"/tʌtʃ beɪs/",r:"связаться, обсудить кратко",x:"Let's touch base again on Thursday.",xr:"Давай ещё раз созвонимся в четверг.",c:"work"},
+{e:"on the same page",t:"/ɑːn ðə seɪm peɪdʒ/",r:"на одной волне, единого мнения",x:"Let's make sure we're on the same page.",xr:"Давайте убедимся, что мы придерживаемся одного мнения.",c:"work"},
+
+// ===== FOOD =====
+{e:"leftovers",t:"/ˈleftoʊvərz/",r:"остатки еды",x:"I had leftovers for lunch today.",xr:"Сегодня на обед у меня были остатки вчерашней еды.",c:"food"},
+{e:"craving",t:"/ˈkreɪvɪŋ/",r:"сильное желание съесть",x:"I have a craving for something sweet.",xr:"Мне очень хочется чего-нибудь сладкого.",c:"food"},
+{e:"takeout",t:"/ˈteɪkaʊt/",r:"еда навынос",x:"Let's just order takeout tonight.",xr:"Давай просто закажем еду навынос сегодня вечером.",c:"food"},
+{e:"recipe",t:"/ˈresəpi/",r:"рецепт",x:"Can you send me that pasta recipe?",xr:"Можешь скинуть мне тот рецепт пасты?",c:"food"},
+{e:"spicy",t:"/ˈspaɪsi/",r:"острый",x:"Careful, this sauce is really spicy.",xr:"Осторожно, этот соус очень острый.",c:"food"},
+{e:"leftover",t:"/ˈleftoʊvər/",r:"оставшийся",x:"We used the leftover rice for fried rice.",xr:"Мы использовали оставшийся рис для жареного риса.",c:"food"},
+{e:"grocery store",t:"/ˈɡroʊsəri stɔːr/",r:"продуктовый магазин",x:"I need to stop by the grocery store.",xr:"Мне нужно заскочить в продуктовый магазин.",c:"food"},
+{e:"starving",t:"/ˈstɑːrvɪŋ/",r:"жутко голодный",x:"Let's eat now, I'm starving.",xr:"Давай уже поедим, я умираю с голоду.",c:"food"},
+{e:"stuffed",t:"/stʌft/",r:"наевшийся до отвала",x:"I'm so stuffed, I can't eat another bite.",xr:"Я так наелся, что больше не могу съесть ни кусочка.",c:"food"},
+{e:"bland",t:"/blænd/",r:"безвкусный, пресный",x:"The soup was a bit bland without salt.",xr:"Суп был немного пресным без соли.",c:"food"},
+{e:"table for two",t:"/ˈteɪbl fər tuː/",r:"столик на двоих",x:"Could we get a table for two, please?",xr:"Можно нам столик на двоих, пожалуйста?",c:"food"},
+{e:"tab",t:"/tæb/",r:"счёт (в баре/ресторане)",x:"Can we split the tab?",xr:"Можем мы разделить счёт?",c:"food"},
+{e:"comfort food",t:"/ˈkʌmfərt fuːd/",r:"еда для утешения, любимая простая еда",x:"Mac and cheese is my ultimate comfort food.",xr:"Макароны с сыром — моя любимая утешительная еда.",c:"food"},
+{e:"to go",t:"/tə ɡoʊ/",r:"навынос",x:"Can I get this to go, please?",xr:"Можно мне это с собой, пожалуйста?",c:"food"},
+
+// ===== TECH =====
+{e:"upload",t:"/ʌpˈloʊd/",r:"загружать (на сервер)",x:"I'll upload the files tonight.",xr:"Я загружу файлы сегодня вечером.",c:"tech"},
+{e:"download",t:"/ˈdaʊnloʊd/",r:"скачивать",x:"The app is free to download.",xr:"Приложение можно скачать бесплатно.",c:"tech"},
+{e:"password",t:"/ˈpæswɜːrd/",r:"пароль",x:"I forgot my password again.",xr:"Я снова забыл свой пароль.",c:"tech"},
+{e:"battery",t:"/ˈbætəri/",r:"батарея, аккумулятор",x:"My phone battery dies really fast.",xr:"Батарея на моём телефоне разряжается очень быстро.",c:"tech"},
+{e:"update",t:"/ʌpˈdeɪt/",r:"обновление",x:"There's a new update available for your phone.",xr:"Для твоего телефона доступно новое обновление.",c:"tech"},
+{e:"glitch",t:"/ɡlɪtʃ/",r:"сбой, глюк",x:"The app had a glitch during checkout.",xr:"В приложении произошёл сбой при оформлении заказа.",c:"tech"},
+{e:"backup",t:"/ˈbækʌp/",r:"резервная копия",x:"Always keep a backup of your photos.",xr:"Всегда храни резервную копию своих фотографий.",c:"tech"},
+{e:"wireless",t:"/ˈwaɪərləs/",r:"беспроводной",x:"These wireless headphones sound great.",xr:"Эти беспроводные наушники звучат отлично.",c:"tech"},
+{e:"crash",t:"/kræʃ/",r:"вылет, сбой (программы)",x:"My laptop crashed while I was saving the file.",xr:"Мой ноутбук завис, пока я сохранял файл.",c:"tech"},
+{e:"firmware",t:"/ˈfɜːrmwer/",r:"прошивка",x:"You need to update the firmware first.",xr:"Сначала нужно обновить прошивку.",c:"tech"},
+{e:"bandwidth",t:"/ˈbændwɪdθ/",r:"пропускная способность (интернета)",x:"Video calls use a lot of bandwidth.",xr:"Видеозвонки потребляют много трафика.",c:"tech"},
+{e:"notification",t:"/ˌnoʊtɪfɪˈkeɪʃn/",r:"уведомление",x:"I turned off notifications to focus better.",xr:"Я отключил уведомления, чтобы лучше сосредоточиться.",c:"tech"},
+{e:"troubleshoot",t:"/ˈtrʌbəlʃuːt/",r:"устранять неполадки",x:"Let's troubleshoot the network issue together.",xr:"Давай вместе устраним проблему с сетью.",c:"tech"},
+{e:"lag",t:"/læɡ/",r:"задержка, лаг",x:"The game keeps lagging on my old PC.",xr:"Игра постоянно лагает на моём старом ПК.",c:"tech"},
+
+// ===== DAILY LIFE =====
+{e:"chores",t:"/tʃɔːrz/",r:"домашние дела",x:"I do the chores every Saturday morning.",xr:"Я делаю домашние дела каждую субботу утром.",c:"daily"},
+{e:"errand",t:"/ˈerənd/",r:"поручение, дело (по хозяйству)",x:"I have a few errands to run today.",xr:"Мне нужно сделать пару дел сегодня.",c:"daily"},
+{e:"commute",t:"/kəˈmjuːt/",r:"дорога на работу/учёбу",x:"My commute takes about forty minutes.",xr:"Моя дорога на работу занимает около сорока минут.",c:"daily"},
+{e:"laundry",t:"/ˈlɔːndri/",r:"стирка, бельё",x:"I still need to do the laundry.",xr:"Мне ещё нужно постирать бельё.",c:"daily"},
+{e:"neighbor",t:"/ˈneɪbər/",r:"сосед",x:"Our neighbor is really friendly.",xr:"Наш сосед очень дружелюбный.",c:"daily"},
+{e:"routine",t:"/ruːˈtiːn/",r:"распорядок дня",x:"I have a pretty simple morning routine.",xr:"У меня довольно простой утренний распорядок.",c:"daily"},
+{e:"appointment",t:"/əˈpɔɪntmənt/",r:"назначенная встреча (врач и т.п.)",x:"I have a dentist appointment at 5.",xr:"У меня запись к стоматологу в 5.",c:"daily"},
+{e:"bill",t:"/bɪl/",r:"счёт (за услуги)",x:"The electricity bill went up this month.",xr:"Счёт за электричество в этом месяце вырос.",c:"daily"},
+{e:"landlord",t:"/ˈlændlɔːrd/",r:"арендодатель",x:"Our landlord finally fixed the heater.",xr:"Наш арендодатель наконец починил обогреватель.",c:"daily"},
+{e:"messy",t:"/ˈmesi/",r:"неопрятный, беспорядочный",x:"Sorry, my room is a bit messy.",xr:"Извини, у меня в комнате небольшой беспорядок.",c:"daily"},
+{e:"exhausted",t:"/ɪɡˈzɔːstɪd/",r:"измотанный",x:"I'm exhausted after that long walk.",xr:"Я вымотан после этой долгой прогулки.",c:"daily"},
+{e:"grab a bite",t:"/ɡræb ə baɪt/",r:"перекусить",x:"Let's grab a bite before the movie.",xr:"Давай перекусим перед фильмом.",c:"daily"},
+{e:"habit",t:"/ˈhæbɪt/",r:"привычка",x:"Drinking water first thing is a good habit.",xr:"Пить воду сразу после пробуждения — хорошая привычка.",c:"daily"},
+
+// ===== SLANG / CONVERSATIONAL AMERICAN ENGLISH =====
+{e:"gonna",t:"/ˈɡʌnə/",r:"собираюсь (going to)",x:"I'm gonna grab some coffee, want one?",xr:"Я собираюсь взять кофе, тебе тоже?",c:"slang"},
+{e:"wanna",t:"/ˈwɑːnə/",r:"хочу (want to)",x:"Do you wanna hang out this weekend?",xr:"Хочешь потусоваться на выходных?",c:"slang"},
+{e:"gotta",t:"/ˈɡɑːtə/",r:"должен (got to)",x:"I gotta go, my bus is here.",xr:"Мне пора, автобус приехал.",c:"slang"},
+{e:"kinda",t:"/ˈkaɪndə/",r:"вроде, типа (kind of)",x:"I'm kinda tired, can we go home?",xr:"Я вроде как устал, можем пойти домой?",c:"slang"},
+{e:"legit",t:"/ləˈdʒɪt/",r:"по-настоящему, реально; законный",x:"That movie was legit amazing.",xr:"Этот фильм реально был крутым.",c:"slang"},
+{e:"chill",t:"/tʃɪl/",r:"расслабиться, спокойный",x:"Let's just chill at home tonight.",xr:"Давай просто отдохнём дома сегодня вечером.",c:"slang"},
+{e:"hang out",t:"/hæŋ aʊt/",r:"тусоваться, проводить время",x:"We usually hang out at the mall.",xr:"Мы обычно тусуемся в торговом центре.",c:"slang"},
+{e:"awesome",t:"/ˈɔːsəm/",r:"классный, потрясающий",x:"Dude, that concert was awesome!",xr:"Чувак, тот концерт был потрясающим!",c:"slang"},
+{e:"sketchy",t:"/ˈsketʃi/",r:"подозрительный, сомнительный",x:"That guy seemed kind of sketchy.",xr:"Тот парень показался мне подозрительным.",c:"slang"},
+{e:"broke",t:"/broʊk/",r:"без денег, на мели",x:"I can't go out tonight, I'm broke.",xr:"Не могу пойти гулять сегодня, я на мели.",c:"slang"},
+{e:"binge-watch",t:"/bɪndʒ wɑːtʃ/",r:"смотреть подряд (сериал)",x:"We binge-watched the whole season in one day.",xr:"Мы посмотрели весь сезон за один день.",c:"slang"},
+{e:"ghost (someone)",t:"/ɡoʊst/",r:"пропасть, перестать отвечать",x:"He just ghosted me after our first date.",xr:"Он просто пропал после нашего первого свидания.",c:"slang"},
+{e:"low-key",t:"/ˌloʊˈkiː/",r:"немного, втайне (наречие)",x:"I'm low-key excited about this trip.",xr:"Я немного, но взволнован этой поездкой.",c:"slang"},
+{e:"no biggie",t:"/noʊ ˈbɪɡi/",r:"пустяки, не проблема",x:"Don't worry about it, it's no biggie.",xr:"Не переживай, это пустяки.",c:"slang"},
+{e:"my bad",t:"/maɪ bæd/",r:"моя ошибка, извиняюсь",x:"My bad, I totally forgot to text you.",xr:"Моя вина, я совсем забыл тебе написать.",c:"slang"},
+{e:"for real",t:"/fər riːl/",r:"серьёзно, правда",x:"You got the job? For real?",xr:"Ты получил работу? Серьёзно?",c:"slang"},
+{e:"crash (at someone's place)",t:"/kræʃ/",r:"переночевать у кого-то",x:"Can I crash at your place tonight?",xr:"Можно я переночую у тебя сегодня?",c:"slang"},
+{e:"dude",t:"/duːd/",r:"чувак",x:"Dude, you have to see this.",xr:"Чувак, тебе нужно это увидеть.",c:"slang"},
+{e:"y'all",t:"/jɔːl/",r:"вы все (you all, разг. южный/американский)",x:"Are y'all coming to the party?",xr:"Вы все идёте на вечеринку?",c:"slang"},
+{e:"ain't",t:"/eɪnt/",r:"не (разг. форма am not / isn't / aren't)",x:"That ain't gonna happen, trust me.",xr:"Этого не случится, поверь мне.",c:"slang"},
+{e:"figure out",t:"/ˈfɪɡjər aʊt/",r:"разобраться, понять",x:"I still can't figure out how this works.",xr:"Я всё ещё не могу понять, как это работает.",c:"slang"},
+{e:"screw up",t:"/skruː ʌp/",r:"облажаться, напортачить",x:"I totally screwed up that presentation.",xr:"Я полностью облажался с той презентацией.",c:"slang"},
+{e:"freak out",t:"/friːk aʊt/",r:"паниковать, взбеситься",x:"Don't freak out, everything's fine.",xr:"Не паникуй, всё в порядке.",c:"slang"},
+{e:"psyched",t:"/saɪkt/",r:"взбудораженный, в восторге",x:"I'm so psyched for the trip next week.",xr:"Я так рад предстоящей поездке на следующей неделе.",c:"slang"},
+{e:"salty",t:"/ˈsɔːlti/",r:"обиженный, злой из-за мелочи",x:"He's still salty about losing the game.",xr:"Он всё ещё дуется из-за проигрыша в игре.",c:"slang"},
+{e:"spill the tea",t:"/spɪl ðə tiː/",r:"рассказать сплетни, поделиться новостями",x:"Okay, spill the tea, what happened?",xr:"Так, давай выкладывай, что случилось?",c:"slang"},
+{e:"throw shade",t:"/θroʊ ʃeɪd/",r:"подкалывать, критиковать исподтишка",x:"She was totally throwing shade at the meeting.",xr:"Она реально подкалывала на встрече.",c:"slang"},
+{e:"bail",t:"/beɪl/",r:"свалить, отменить планы в последний момент",x:"Sorry, I have to bail on dinner tonight.",xr:"Извини, мне придётся отменить сегодняшний ужин.",c:"slang"},
+{e:"stoked",t:"/stoʊkt/",r:"очень рад, в предвкушении",x:"I'm stoked about the new job.",xr:"Я очень рад новой работе.",c:"slang"},
+{e:"sus",t:"/sʌs/",r:"подозрительный (сленг, от suspicious)",x:"That email looks kinda sus, don't click it.",xr:"Это письмо выглядит подозрительно, не открывай его.",c:"slang"},
+{e:"bummer",t:"/ˈbʌmər/",r:"досада, обидно",x:"You can't come? Aw, that's a bummer.",xr:"Ты не сможешь прийти? Жаль, обидно.",c:"slang"},
+{e:"pumped",t:"/pʌmpt/",r:"взвинченный, взволнован в хорошем смысле",x:"I'm so pumped for the weekend!",xr:"Я так рад предстоящим выходным!",c:"slang"},
+{e:"catch up",t:"/kætʃ ʌp/",r:"наверстать, пообщаться после разлуки",x:"We should catch up over coffee sometime.",xr:"Нам нужно как-нибудь встретиться и пообщаться за кофе.",c:"slang"},
+{e:"the whole nine yards",t:"/ðə hoʊl naɪn jɑːrdz/",r:"по полной программе, всё до конца",x:"They did the wedding, the whole nine yards.",xr:"Они устроили свадьбу по полной программе.",c:"slang"},
+{e:"piece of cake",t:"/piːs əv keɪk/",r:"проще простого",x:"Don't worry, this exam is a piece of cake.",xr:"Не переживай, этот экзамен — проще простого.",c:"slang"},
+{e:"break a leg",t:"/breɪk ə leɡ/",r:"ни пуха ни пера",x:"You've got this interview today — break a leg!",xr:"У тебя сегодня собеседование — ни пуха ни пера!",c:"slang"},
+{e:"hit the sack",t:"/hɪt ðə sæk/",r:"пойти спать, завалиться на боковую",x:"I'm gonna hit the sack, I'm exhausted.",xr:"Я пойду спать, я вымотан.",c:"slang"},
+{e:"my two cents",t:"/maɪ tuː sents/",r:"моё скромное мнение",x:"Just my two cents, but I'd wait a bit.",xr:"Просто моё мнение, но я бы подождал немного.",c:"slang"},
+{e:"deal with it",t:"/diːl wɪð ɪt/",r:"смирись, разберись с этим",x:"I know it's tough, but you'll have to deal with it.",xr:"Знаю, это тяжело, но тебе придётся с этим смириться.",c:"slang"},
+{e:"hit me up",t:"/hɪt miː ʌp/",r:"напиши/позвони мне",x:"Hit me up when you're free tonight.",xr:"Напиши мне, когда освободишься сегодня вечером.",c:"slang"},
+{e:"mixed up",t:"/mɪkst ʌp/",r:"перепутанный, запутавшийся",x:"Sorry, I got the dates mixed up.",xr:"Извини, я перепутал даты.",c:"slang"},
+{e:"count me in",t:"/kaʊnt miː ɪn/",r:"я в деле, рассчитывай на меня",x:"A road trip this weekend? Count me in!",xr:"Поездка на выходных? Я в деле!",c:"slang"},
+{e:"I'm beat",t:"/aɪm biːt/",r:"я вымотан",x:"I'm beat, let's call it a night.",xr:"Я вымотан, давай закругляться на сегодня.",c:"slang"},
+{e:"drop by",t:"/drɑːp baɪ/",r:"заскочить, заглянуть",x:"Feel free to drop by anytime.",xr:"Заглядывай в любое время.",c:"slang"},
+{e:"the real deal",t:"/ðə riːl diːl/",r:"настоящая вещь, не подделка",x:"This coffee shop is the real deal.",xr:"Эта кофейня — то, что надо, без обмана.",c:"slang"},
+{e:"knock it off",t:"/nɑːk ɪt ɔːf/",r:"прекрати, хватит",x:"Knock it off, you two, seriously.",xr:"Хватит, вы двое, серьёзно.",c:"slang"},
+{e:"on a roll",t:"/ɑːn ə roʊl/",r:"в ударе, всё получается",x:"She's been on a roll at work lately.",xr:"В последнее время она в ударе на работе.",c:"slang"},
+{e:"out of the blue",t:"/aʊt əv ðə bluː/",r:"неожиданно, как гром среди ясного неба",x:"He called me out of the blue yesterday.",xr:"Он позвонил мне вчера совершенно неожиданно.",c:"slang"},
+{e:"call it a day",t:"/kɔːl ɪt ə deɪ/",r:"закончить на сегодня",x:"Let's call it a day, I'm done working.",xr:"Давай закончим на сегодня, я всё сделал.",c:"slang"},
+{e:"cut corners",t:"/kʌt ˈkɔːrnərz/",r:"экономить в ущерб качеству",x:"They cut corners on the renovation, and it shows.",xr:"Они сэкономили на ремонте в ущерб качеству, и это видно.",c:"slang"},
+{e:"under the weather",t:"/ˈʌndər ðə ˈweðər/",r:"неважно себя чувствовать",x:"I'm feeling a bit under the weather today.",xr:"Сегодня я чувствую себя не очень.",c:"slang"},
+{e:"back on track",t:"/bæk ɑːn træk/",r:"снова в норме, на верном пути",x:"After a rough week, we're finally back on track.",xr:"После тяжёлой недели мы наконец-то снова в норме.",c:"slang"},
+{e:"give it a shot",t:"/ɡɪv ɪt ə ʃɑːt/",r:"попробовать, рискнуть",x:"I've never tried snowboarding, but I'll give it a shot.",xr:"Я никогда не пробовал сноуборд, но попробую.",c:"slang"},
+{e:"my mind is blown",t:"/maɪ maɪnd ɪz bloʊn/",r:"я в шоке, поражён",x:"My mind is blown, I had no idea that was true.",xr:"Я в шоке, не знал, что это правда.",c:"slang"},
+{e:"crash course",t:"/kræʃ kɔːrs/",r:"ускоренный курс",x:"I took a crash course in Spanish before the trip.",xr:"Я прошёл ускоренный курс испанского перед поездкой.",c:"slang"},
+{e:"pull an all-nighter",t:"/pʊl ən ɔːl ˈnaɪtər/",r:"не спать всю ночь (работать/учиться)",x:"I pulled an all-nighter to finish the report.",xr:"Я не спал всю ночь, чтобы закончить отчёт.",c:"slang"},
+{e:"long story short",t:"/lɔːŋ ˈstɔːri ʃɔːrt/",r:"короче говоря",x:"Long story short, we missed the flight.",xr:"Короче говоря, мы опоздали на рейс.",c:"slang"},
+{e:"heads up",t:"/hedz ʌp/",r:"предупреждение, к сведению",x:"Just a heads up, the meeting moved to noon.",xr:"К сведению, встречу перенесли на полдень.",c:"slang"},
+
+{e:"asap",t:"/ˌeɪ es eɪ ˈpiː/",r:"как можно скорее (as soon as possible)",x:"Please send me the file ASAP.",xr:"Пришлите мне файл как можно скорее.",c:"work"},
+{e:"onboarding",t:"/ˈɑːnbɔːrdɪŋ/",r:"адаптация нового сотрудника",x:"The onboarding process took about a week.",xr:"Процесс адаптации занял около недели.",c:"work"},
+{e:"deliverable",t:"/dɪˈlɪvərəbl/",r:"результат работы, итоговый продукт",x:"We need to finalize the deliverables by Monday.",xr:"Нам нужно доработать результаты к понедельнику.",c:"work"},
+{e:"raise",t:"/reɪz/",r:"повышение зарплаты",x:"He's planning to ask for a raise next month.",xr:"Он планирует попросить повышение зарплаты в следующем месяце.",c:"work"},
+{e:"performance review",t:"/pərˈfɔːrməns rɪˈvjuː/",r:"оценка эффективности сотрудника",x:"My performance review is scheduled for Thursday.",xr:"Моя оценка эффективности назначена на четверг.",c:"work"},
+{e:"headhunter",t:"/ˈhedhʌntər/",r:"хедхантер, рекрутер",x:"A headhunter reached out to me on LinkedIn.",xr:"Хедхантер связался со мной в LinkedIn.",c:"work"},
+{e:"probation period",t:"/proʊˈbeɪʃn ˈpɪriəd/",r:"испытательный срок",x:"The probation period usually lasts three months.",xr:"Испытательный срок обычно длится три месяца.",c:"work"},
+{e:"layoff",t:"/ˈleɪɔːf/",r:"сокращение штата, увольнение",x:"There were several layoffs after the merger.",xr:"После слияния компаний было несколько сокращений.",c:"work"},
+{e:"shift",t:"/ʃɪft/",r:"смена (рабочая)",x:"I work the night shift this week.",xr:"На этой неделе я работаю в ночную смену.",c:"work"},
+{e:"client",t:"/ˈklaɪənt/",r:"клиент",x:"We're meeting a new client this afternoon.",xr:"Сегодня днём у нас встреча с новым клиентом.",c:"work"},
+{e:"invoice",t:"/ˈɪnvɔɪs/",r:"счёт-фактура, инвойс",x:"I sent the invoice last week, still unpaid.",xr:"Я отправил счёт на прошлой неделе, всё ещё не оплачен.",c:"work"},
+
+{e:"paid time off",t:"/peɪd taɪm ɔːf/",r:"оплачиваемый отпуск",x:"I still have five days of paid time off this year.",xr:"У меня ещё осталось пять дней оплачиваемого отпуска в этом году.",c:"work"},
+
+{e:"boarding gate",t:"/ˈbɔːrdɪŋ ɡeɪt/",r:"выход на посадку",x:"The boarding gate closes ten minutes before departure.",xr:"Выход на посадку закрывается за десять минут до вылета.",c:"travel"},
+{e:"overbooked",t:"/ˌoʊvərˈbʊkt/",r:"перебронированный (о рейсе, отеле)",x:"Our flight was overbooked, so we got vouchers.",xr:"Наш рейс был перебронирован, поэтому нам дали ваучеры.",c:"travel"},
+{e:"connecting flight",t:"/kəˈnektɪŋ flaɪt/",r:"стыковочный рейс",x:"We have a tight connection between flights.",xr:"У нас очень мало времени на стыковку между рейсами.",c:"travel"},
+{e:"backpacking",t:"/ˈbækpækɪŋ/",r:"путешествие с рюкзаком (бюджетное)",x:"They went backpacking across Southeast Asia.",xr:"Они путешествовали с рюкзаком по Юго-Восточной Азии.",c:"travel"},
+{e:"time zone",t:"/taɪm zoʊn/",r:"часовой пояс",x:"I always forget the time zone difference.",xr:"Я всегда забываю про разницу в часовых поясах.",c:"travel"},
+{e:"scenic route",t:"/ˈsiːnɪk ruːt/",r:"живописный маршрут",x:"Let's take the scenic route along the coast.",xr:"Давай поедем по живописному маршруту вдоль побережья.",c:"travel"},
+{e:"border crossing",t:"/ˈbɔːrdər ˈkrɔːsɪŋ/",r:"пересечение границы",x:"The border crossing took almost two hours.",xr:"Пересечение границы заняло почти два часа.",c:"travel"},
+{e:"travel insurance",t:"/ˈtrævl ɪnˈʃʊrəns/",r:"туристическая страховка",x:"Always get travel insurance before a big trip.",xr:"Всегда оформляй туристическую страховку перед большой поездкой.",c:"travel"},
+{e:"pack light",t:"/pæk laɪt/",r:"путешествовать налегке",x:"I try to pack light whenever I travel.",xr:"Я стараюсь путешествовать налегке, когда еду куда-то.",c:"travel"},
+{e:"local guide",t:"/ˈloʊkl ɡaɪd/",r:"местный гид",x:"We hired a local guide to show us around.",xr:"Мы наняли местного гида, чтобы он показал нам город.",c:"travel"},
+
+{e:"appetizer",t:"/ˈæpɪtaɪzər/",r:"закуска",x:"Should we order an appetizer to share?",xr:"Может, закажем закуску на двоих?",c:"food"},
+{e:"refill",t:"/ˈriːfɪl/",r:"долив, повторная порция",x:"Can I get a refill on my coffee?",xr:"Можно мне долить кофе?",c:"food"},
+{e:"medium rare",t:"/ˈmiːdiəm rer/",r:"средней прожарки (мясо)",x:"I'll have the steak medium rare, please.",xr:"Мне стейк средней прожарки, пожалуйста.",c:"food"},
+{e:"dairy-free",t:"/ˈderi friː/",r:"без молочных продуктов",x:"Do you have any dairy-free options?",xr:"У вас есть варианты без молочных продуктов?",c:"food"},
+{e:"food coma",t:"/fuːd ˈkoʊmə/",r:"сонливость после плотной еды",x:"After Thanksgiving dinner, I was in a total food coma.",xr:"После ужина на День благодарения меня совсем разморило от еды.",c:"food"},
+{e:"picky eater",t:"/ˈpɪki ˈiːtər/",r:"привередливый в еде",x:"My little brother is such a picky eater.",xr:"Мой младший брат очень привередлив в еде.",c:"food"},
+{e:"happy hour",t:"/ˈhæpi ˈaʊər/",r:"счастливый час (скидки в баре)",x:"Drinks are half price during happy hour.",xr:"Во время счастливого часа напитки продаются со скидкой 50%.",c:"food"},
+{e:"side dish",t:"/saɪd dɪʃ/",r:"гарнир",x:"What side dish comes with the chicken?",xr:"Какой гарнир идёт с курицей?",c:"food"},
+{e:"doggy bag",t:"/ˈdɔːɡi bæɡ/",r:"пакет для остатков еды из ресторана",x:"Can I get a doggy bag for the rest of this?",xr:"Можно упаковать с собой то, что осталось?",c:"food"},
+{e:"farm-to-table",t:"/fɑːrm tə ˈteɪbl/",r:"из фермерских продуктов, локальная еда",x:"This restaurant is known for its farm-to-table menu.",xr:"Этот ресторан известен меню из локальных фермерских продуктов.",c:"food"},
+
+{e:"cloud storage",t:"/klaʊd ˈstɔːrɪdʒ/",r:"облачное хранилище",x:"I keep all my documents in cloud storage.",xr:"Я храню все документы в облачном хранилище.",c:"tech"},
+{e:"screenshot",t:"/ˈskriːnʃɑːt/",r:"скриншот",x:"Can you send me a screenshot of the error?",xr:"Можешь прислать скриншот ошибки?",c:"tech"},
+{e:"two-factor authentication",t:"/tuː ˈfæktər ɔːˌθentɪˈkeɪʃn/",r:"двухфакторная аутентификация",x:"I turned on two-factor authentication for my account.",xr:"Я включил двухфакторную аутентификацию для своего аккаунта.",c:"tech"},
+{e:"malware",t:"/ˈmælwer/",r:"вредоносное ПО",x:"The antivirus detected malware on the laptop.",xr:"Антивирус обнаружил вредоносное ПО на ноутбуке.",c:"tech"},
+{e:"charger",t:"/ˈtʃɑːrdʒər/",r:"зарядное устройство",x:"Do you have a spare phone charger?",xr:"У тебя есть запасное зарядное устройство для телефона?",c:"tech"},
+{e:"soldering iron",t:"/ˈsɑːdərɪŋ ˈaɪərn/",r:"паяльник",x:"You'll need a soldering iron to replace that chip.",xr:"Тебе понадобится паяльник, чтобы заменить этот чип.",c:"tech"},
+{e:"circuit board",t:"/ˈsɜːrkɪt bɔːrd/",r:"печатная плата",x:"The circuit board was damaged by moisture.",xr:"Печатная плата была повреждена влагой.",c:"tech"},
+{e:"firmware update",t:"/ˈfɜːrmwer ʌpˈdeɪt/",r:"обновление прошивки",x:"Make sure to install the latest firmware update.",xr:"Обязательно установи последнее обновление прошивки.",c:"tech"},
+{e:"short circuit",t:"/ʃɔːrt ˈsɜːrkɪt/",r:"короткое замыкание",x:"A short circuit caused the device to stop working.",xr:"Короткое замыкание вывело устройство из строя.",c:"tech"},
+{e:"data breach",t:"/ˈdeɪtə briːtʃ/",r:"утечка данных",x:"The company reported a data breach last month.",xr:"В прошлом месяце компания сообщила об утечке данных.",c:"tech"},
+{e:"router",t:"/ˈruːtər/",r:"маршрутизатор, роутер",x:"Try restarting the router if the internet is slow.",xr:"Попробуй перезагрузить роутер, если интернет медленный.",c:"tech"},
+
+{e:"grocery run",t:"/ˈɡroʊsəri rʌn/",r:"поход за продуктами",x:"I'm making a quick grocery run, need anything?",xr:"Я быстро сбегаю за продуктами, тебе что-нибудь нужно?",c:"daily"},
+{e:"declutter",t:"/diːˈklʌtər/",r:"разобрать хлам, навести порядок",x:"I spent the weekend decluttering my closet.",xr:"Я потратил выходные на разбор шкафа от хлама.",c:"daily"},
+{e:"utility bill",t:"/juːˈtɪləti bɪl/",r:"счёт за коммунальные услуги",x:"The utility bill was higher than usual this month.",xr:"Счёт за коммунальные услуги в этом месяце был выше обычного.",c:"daily"},
+{e:"run late",t:"/rʌn leɪt/",r:"опаздывать",x:"Sorry, I'm running a bit late.",xr:"Извини, я немного опаздываю.",c:"daily"},
+{e:"errand list",t:"/ˈerənd lɪst/",r:"список дел",x:"I made an errand list for Saturday morning.",xr:"Я составил список дел на субботнее утро.",c:"daily"},
+{e:"self-care",t:"/self ker/",r:"забота о себе",x:"Taking a walk is part of my self-care routine.",xr:"Прогулка — часть моей заботы о себе.",c:"daily"},
+{e:"cozy",t:"/ˈkoʊzi/",r:"уютный",x:"Their living room feels really cozy in winter.",xr:"Их гостиная зимой кажется очень уютной.",c:"daily"},
+{e:"sort out",t:"/sɔːrt aʊt/",r:"разобраться, уладить",x:"I need to sort out my schedule for next week.",xr:"Мне нужно разобраться со своим расписанием на следующую неделю.",c:"daily"},
+
+{e:"pragmatic",t:"/præɡˈmætɪk/",r:"прагматичный",x:"We need a more pragmatic approach to this problem.",xr:"Нам нужен более прагматичный подход к этой проблеме.",c:"advanced"},
+{e:"redundant",t:"/rɪˈdʌndənt/",r:"избыточный, лишний",x:"Half of this paragraph feels redundant.",xr:"Половина этого абзаца кажется избыточной.",c:"advanced"},
+{e:"tangible",t:"/ˈtændʒəbl/",r:"осязаемый, ощутимый",x:"We're finally seeing tangible results from the campaign.",xr:"Мы наконец видим ощутимые результаты кампании.",c:"advanced"},
+{e:"circumvent",t:"/ˌsɜːrkəmˈvent/",r:"обходить (правило, проблему)",x:"They found a way to circumvent the restriction.",xr:"Они нашли способ обойти ограничение.",c:"advanced"},
+{e:"discern",t:"/dɪˈsɜːrn/",r:"различать, распознавать",x:"It's hard to discern fact from opinion online.",xr:"В интернете трудно отличить факт от мнения.",c:"advanced"},
+{e:"cohesive",t:"/koʊˈhiːsɪv/",r:"связный, целостный",x:"The team finally feels like a cohesive unit.",xr:"Команда наконец ощущается как единое целое.",c:"advanced"},
+{e:"viable",t:"/ˈvaɪəbl/",r:"жизнеспособный, осуществимый",x:"Is this business idea actually viable?",xr:"Эта бизнес-идея действительно жизнеспособна?",c:"advanced"},
+{e:"detrimental",t:"/ˌdetrɪˈmentl/",r:"вредный, пагубный",x:"Too much stress can be detrimental to your health.",xr:"Слишком сильный стресс может быть вреден для здоровья.",c:"advanced"},
+
+{e:"greet",t:"/ɡriːt/",r:"приветствовать",x:"She greeted every guest with a warm smile.",xr:"Она приветствовала каждого гостя тёплой улыбкой.",c:"beginner"},
+{e:"try",t:"/traɪ/",r:"пытаться, пробовать",x:"Just try your best, that's all that matters.",xr:"Просто постарайся изо всех сил, это главное.",c:"beginner"},
+{e:"wait",t:"/weɪt/",r:"ждать",x:"Please wait here until I come back.",xr:"Пожалуйста, подожди здесь, пока я не вернусь.",c:"beginner"},
+{e:"different",t:"/ˈdɪfrənt/",r:"другой, отличающийся",x:"This city looks so different at night.",xr:"Этот город выглядит совсем по-другому ночью.",c:"beginner"},
+{e:"remember",t:"/rɪˈmembər/",r:"помнить, вспоминать",x:"Do you remember where we parked the car?",xr:"Ты помнишь, где мы припарковали машину?",c:"beginner"},
+{e:"forget",t:"/fərˈɡet/",r:"забывать",x:"I always forget my umbrella at home.",xr:"Я всегда забываю зонт дома.",c:"beginner"},
+
+{e:"in the long run",t:"/ɪn ðə lɔːŋ rʌn/",r:"в долгосрочной перспективе",x:"It's more efficient in the long run.",xr:"В долгосрочной перспективе это эффективнее.",c:"intermediate"},
+{e:"take into account",t:"/teɪk ˈɪntu əˈkaʊnt/",r:"принимать во внимание",x:"We should take his experience into account.",xr:"Нам стоит принять во внимание его опыт.",c:"intermediate"},
+{e:"come up with",t:"/kʌm ʌp wɪð/",r:"придумывать",x:"She came up with a clever solution.",xr:"Она придумала остроумное решение.",c:"intermediate"},
+{e:"point out",t:"/pɔɪnt aʊt/",r:"указывать на, отмечать",x:"He pointed out a mistake in the report.",xr:"Он указал на ошибку в отчёте.",c:"intermediate"},
+{e:"get along",t:"/ɡet əˈlɔːŋ/",r:"ладить",x:"They get along really well with each other.",xr:"Они очень хорошо ладят друг с другом.",c:"intermediate"},
+
+// ===== TECH / ENGINEERING (расширенный технический блок) =====
+{e:"resistor",t:"/rɪˈzɪstər/",r:"резистор",x:"Replace the burnt resistor on the board.",xr:"Замени сгоревший резистор на плате.",c:"tech"},
+{e:"capacitor",t:"/kəˈpæsɪtər/",r:"конденсатор",x:"A swollen capacitor is a common failure sign.",xr:"Вздутый конденсатор — частый признак неисправности.",c:"tech"},
+{e:"voltage",t:"/ˈvoʊltɪdʒ/",r:"напряжение",x:"Check the voltage before touching the board.",xr:"Проверь напряжение, прежде чем трогать плату.",c:"tech"},
+{e:"current",t:"/ˈkɜːrənt/",r:"ток (электрический)",x:"The current draw is higher than expected.",xr:"Потребляемый ток выше, чем ожидалось.",c:"tech"},
+{e:"multimeter",t:"/ˈmʌltiˌmiːtər/",r:"мультиметр",x:"Use a multimeter to test the fuse.",xr:"Используй мультиметр, чтобы проверить предохранитель.",c:"tech"},
+{e:"soldering",t:"/ˈsɑːdərɪŋ/",r:"пайка",x:"His soldering skills improved a lot with practice.",xr:"Его навыки пайки сильно улучшились с практикой.",c:"tech"},
+{e:"EEPROM",t:"/ˈiːˌiːˈprɑːm/",r:"энергонезависимая перезаписываемая память",x:"The EEPROM chip stores the calibration data.",xr:"Чип EEPROM хранит данные калибровки.",c:"tech"},
+{e:"firmware flash",t:"/ˈfɜːrmwer flæʃ/",r:"перепрошивка",x:"A firmware flash can sometimes fix boot issues.",xr:"Перепрошивка иногда помогает решить проблемы с загрузкой.",c:"tech"},
+{e:"motherboard",t:"/ˈmʌðərbɔːrd/",r:"материнская плата",x:"The motherboard has a small crack near the connector.",xr:"На материнской плате есть небольшая трещина у разъёма.",c:"tech"},
+{e:"controller",t:"/kənˈtroʊlər/",r:"контроллер",x:"We reflashed the motor controller last week.",xr:"На прошлой неделе мы перепрошили контроллер двигателя.",c:"tech"},
+{e:"battery pack",t:"/ˈbætəri pæk/",r:"аккумуляторная батарея, батарейный блок",x:"The battery pack takes about four hours to charge.",xr:"Аккумуляторный блок заряжается около четырёх часов.",c:"tech"},
+{e:"inrush current",t:"/ˈɪnrʌʃ ˈkɜːrənt/",r:"пусковой ток",x:"Inrush current can damage components if unchecked.",xr:"Пусковой ток может повредить компоненты, если его не ограничить.",c:"tech"},
+{e:"schematic",t:"/skiːˈmætɪk/",r:"электрическая схема",x:"I found the schematic for this board online.",xr:"Я нашёл электрическую схему для этой платы в интернете.",c:"tech"},
+{e:"solder joint",t:"/ˈsɑːdər dʒɔɪnt/",r:"место пайки",x:"A cold solder joint can cause intermittent faults.",xr:"Холодная пайка может вызывать периодические сбои.",c:"tech"},
+{e:"power supply",t:"/ˈpaʊər səˈplaɪ/",r:"блок питания",x:"The power supply wasn't outputting enough voltage.",xr:"Блок питания не выдавал достаточное напряжение.",c:"tech"},
+{e:"ground wire",t:"/ɡraʊnd waɪər/",r:"провод заземления",x:"Make sure the ground wire is properly connected.",xr:"Убедись, что провод заземления правильно подключён.",c:"tech"},
+{e:"short",t:"/ʃɔːrt/",r:"замыкание (разг., short circuit)",x:"There's a short somewhere in this wiring.",xr:"Где-то в этой проводке есть замыкание.",c:"tech"},
+{e:"programmer (device)",t:"/ˈproʊɡræmər/",r:"программатор",x:"You'll need a chip programmer to dump the EEPROM.",xr:"Тебе понадобится программатор, чтобы считать дамп с EEPROM.",c:"tech"},
+{e:"dump (data)",t:"/dʌmp/",r:"дамп, снимок данных с чипа",x:"Can you send me a working dump of that chip?",xr:"Можешь прислать мне рабочий дамп с этого чипа?",c:"tech"},
+{e:"brick (device)",t:"/brɪk/",r:"превратить в кирпич (сломать прошивкой)",x:"A failed update bricked the TV's main board.",xr:"Неудачное обновление превратило плату телевизора в кирпич.",c:"tech"},
+{e:"regenerative braking",t:"/rɪˈdʒenərətɪv ˈbreɪkɪŋ/",r:"рекуперативное торможение",x:"Regenerative braking helps recharge the battery while riding.",xr:"Рекуперативное торможение помогает подзаряжать батарею во время движения.",c:"tech"},
+{e:"hub motor",t:"/hʌb ˈmoʊtər/",r:"мотор-колесо",x:"Each wheel has its own hub motor.",xr:"У каждого колеса свой отдельный мотор-колесо.",c:"tech"},
+{e:"overheat",t:"/ˌoʊvərˈhiːt/",r:"перегреваться",x:"The controller tends to overheat under heavy load.",xr:"Контроллер склонен перегреваться под большой нагрузкой.",c:"tech"},
+{e:"debug",t:"/diːˈbʌɡ/",r:"отлаживать (код/устройство)",x:"I spent all night debugging this firmware.",xr:"Я всю ночь отлаживал эту прошивку.",c:"tech"},
+{e:"open source",t:"/ˈoʊpən sɔːrs/",r:"с открытым исходным кодом",x:"This controller firmware is open source.",xr:"Прошивка этого контроллера с открытым исходным кодом.",c:"tech"},
+];
+
+/* ---------- грамматика ---------- */
+const GRAMMAR_EN = [
+{id:'presimple', title:'Present Simple', level:'A1',
+ explain:'Используется для регулярных действий, привычек, фактов и расписаний. Утверждение: subject + V(s/es). Вопрос/отрицание строятся с do/does.',
+ examples:['I work from home three days a week.','She doesn\'t like coffee.','Do you play football on weekends?','The store opens at nine.'],
+ ex:[{q:'She ____ (work) every day.',a:'works'},{q:'They ____ (not / like) spicy food.',a:"don't like"},{q:'____ you speak English? (Do/Does)',a:'Do'}]},
+{id:'precont', title:'Present Continuous', level:'A1',
+ explain:'Действие, происходящее прямо сейчас или временная ситуация. Форма: am/is/are + V-ing.',
+ examples:['I am writing an email right now.','She is studying for her exam this week.','They aren\'t watching TV at the moment.'],
+ ex:[{q:'He ____ (talk) on the phone now.',a:'is talking'},{q:'We ____ (not / work) today.',a:"aren't working"}]},
+{id:'pastsimple', title:'Past Simple', level:'A2',
+ explain:'Завершённое действие в прошлом с указанием времени. Правильные глаголы +ed, неправильные — своя форма.',
+ examples:['I visited my parents last weekend.','She didn\'t call me yesterday.','Did you finish the project on time?'],
+ ex:[{q:'They ____ (go) to the party last night.',a:'went'},{q:'I ____ (not / see) that movie.',a:"didn't see"}]},
+{id:'futsimple', title:'Future Simple', level:'A2',
+ explain:'Спонтанные решения, обещания, предсказания. Форма: will + V.',
+ examples:['I will call you tomorrow.','It will probably rain later.','I think she will love this gift.'],
+ ex:[{q:'I ____ (help) you with that later.',a:'will help'}]},
+{id:'preperfect', title:'Present Perfect', level:'B1',
+ explain:'Связь прошлого с настоящим: опыт, результат, ещё не случившееся. Форма: have/has + V3.',
+ examples:['I have already finished the report.','She has never been to Japan.','Have you ever tried sushi?'],
+ ex:[{q:'I ____ (finish) my homework already.',a:'have finished'},{q:'____ you ever ____ (be) to the US?',a:'Have / been'}]},
+{id:'articles', title:'Артикли (a / an / the)', level:'A1',
+ explain:'"a/an" — неопределённый артикль (первое упоминание, любой предмет). "the" — определённый (конкретный, уже известный предмет). Перед исчисляемыми существительными во множественном числе и неисчисляемыми в общем смысле артикль не ставится.',
+ examples:['I saw a dog in the park. The dog was really friendly.','She is an engineer.','I love music. (без артикля, в общем смысле)'],
+ ex:[{q:'I bought ____ apple. (a/an)',a:'an'},{q:'____ sun is very bright today. (a/the/-)',a:'The'}]},
+{id:'prepositions', title:'Предлоги места и времени', level:'A2',
+ explain:'in (месяц, год, город), on (день, дата), at (время, точка). Для места: in (внутри), on (на поверхности), at (у конкретной точки).',
+ examples:['The meeting is at 5 PM on Friday in March.','She lives in Almaty.','Let\'s meet at the entrance.'],
+ ex:[{q:'I was born ____ 1998. (in/on/at)',a:'in'},{q:'The concert starts ____ 8 PM. (in/on/at)',a:'at'}]},
+{id:'modals', title:'Модальные глаголы', level:'B1',
+ explain:'can/could (возможность, умение), must/have to (обязанность), should (совет), may/might (вероятность).',
+ examples:['You must wear a seatbelt.','You should see a doctor.','It might rain later.','Can you help me for a second?'],
+ ex:[{q:'You ____ smoke here. (must not/should)',a:'must not'},{q:'It ____ rain tomorrow. (might/must)',a:'might'}]},
+{id:'passive', title:'Пассивный залог', level:'B1',
+ explain:'Когда важен не деятель, а само действие. Форма: be + V3.',
+ examples:['The house was built in 1990.','English is spoken all over the world.','The report will be finished by Friday.'],
+ ex:[{q:'The letter ____ (send) yesterday.',a:'was sent'}]},
+{id:'reported', title:'Косвенная речь', level:'B2',
+ explain:'При передаче чужих слов время обычно сдвигается на один шаг назад (say → said that).',
+ examples:['"I am tired," she said. → She said that she was tired.','"I will call you," he said. → He said he would call me.'],
+ ex:[{q:'"I am busy," she said. → She said she ____ busy.',a:'was'}]},
+{id:'conditionals', title:'Условные предложения (Conditionals)', level:'B2',
+ explain:'Zero — общие факты (If + present, present). First — реальное будущее (If + present, will). Second — нереальное настоящее (If + past, would).',
+ examples:['If you heat ice, it melts.','If it rains tomorrow, I will stay home.','If I had more time, I would learn Spanish.'],
+ ex:[{q:'If I ____ (have) more money, I would travel more.',a:'had'}]},
+{id:'gerund', title:'Герундий (V-ing)', level:'B1',
+ explain:'Используется как существительное после некоторых глаголов (enjoy, avoid, finish) и предлогов.',
+ examples:['I enjoy reading before bed.','She is good at cooking.','Thank you for helping me.'],
+ ex:[{q:'I finished ____ (write) the email.',a:'writing'}]},
+{id:'infinitive', title:'Инфинитив (to + V)', level:'B1',
+ explain:'Используется после глаголов типа want, decide, plan, need и для выражения цели.',
+ examples:['I want to learn English fluently.','We decided to leave early.','I called to ask about the schedule.'],
+ ex:[{q:'She wants ____ (learn) Spanish next.',a:'to learn'}]},
+{id:'irregular', title:'Таблица неправильных глаголов', level:'A2-B2',
+ explain:'Наиболее употребимые неправильные глаголы: go–went–gone, see–saw–seen, do–did–done, have–had–had, be–was/were–been, take–took–taken, make–made–made, get–got–gotten, say–said–said, know–knew–known, think–thought–thought, buy–bought–bought.',
+ examples:['I went to the store and bought some milk.','Have you ever seen a bear in the wild?','She has done all her homework.'],
+ ex:[{q:'Yesterday I ____ (go) to the market.',a:'went'},{q:'I have never ____ (see) snow.',a:'seen'}]},
+];
+/* ---------- разговорные фразы (американский сленг/повседневный английский) ---------- */
+const PHRASES_EN = [
+{e:"What's up?",r:"Как дела? / Что нового?",note:"casual greeting"},
+{e:"I'm good, thanks.",r:"Всё хорошо, спасибо.",note:""},
+{e:"Not much, you?",r:"Да ничего особенного, а у тебя?",note:""},
+{e:"Long time no see!",r:"Сколько лет, сколько зим!",note:""},
+{e:"Take it easy.",r:"Не парься. / Полегче.",note:""},
+{e:"I'm on it.",r:"Уже занимаюсь этим.",note:""},
+{e:"No worries.",r:"Не переживай, всё ок.",note:""},
+{e:"Sounds good.",r:"Звучит неплохо, договорились.",note:""},
+{e:"I'm down for that.",r:"Я за, я в деле.",note:"casual"},
+{e:"Let me get back to you.",r:"Я тебе перезвоню / отвечу позже.",note:""},
+{e:"That's a lot to take in.",r:"Это сложно осмыслить сразу.",note:""},
+{e:"I feel you.",r:"Я тебя понимаю.",note:"casual"},
+{e:"It is what it is.",r:"Что есть, то есть.",note:""},
+{e:"Give me a sec.",r:"Дай секунду.",note:""},
+{e:"Hang in there.",r:"Держись.",note:""},
+{e:"I owe you one.",r:"Я твой должник.",note:""},
+{e:"Can't complain.",r:"Не жалуюсь, всё норм.",note:""},
+{e:"Beats me.",r:"Понятия не имею.",note:"casual"},
+{e:"No big deal.",r:"Ничего страшного, не проблема.",note:""},
+{e:"I'm all ears.",r:"Я весь во внимании.",note:""},
+];
+
+const DIALOGUES_EN = [
+{title:'В кафе', lines:[
+  {who:'a',en:"Hi, what can I get started for you?",ru:"Привет, что будете заказывать?"},
+  {who:'b',en:"Can I get a medium latte to go, please?",ru:"Можно мне латте среднего размера с собой, пожалуйста?"},
+  {who:'a',en:"Sure thing. Anything else?",ru:"Конечно. Что-нибудь ещё?"},
+  {who:'b',en:"That's it, thanks.",ru:"Это всё, спасибо."},
+  {who:'a',en:"That'll be four fifty. Name for the order?",ru:"С вас четыре пятьдесят. Как вас записать в заказ?"},
+]},
+{title:'Встреча с другом', lines:[
+  {who:'a',en:"Hey! Long time no see, how have you been?",ru:"Привет! Сколько лет, сколько зим, как дела?"},
+  {who:'b',en:"Pretty good, just super busy with work lately.",ru:"Неплохо, просто в последнее время очень занят работой."},
+  {who:'a',en:"Yeah, I feel you. We should catch up soon.",ru:"Да, понимаю тебя. Надо бы как-нибудь встретиться."},
+  {who:'b',en:"For sure, are you free this weekend?",ru:"Конечно, ты свободен на выходных?"},
+]},
+{title:'Собеседование', lines:[
+  {who:'a',en:"So, tell me a bit about yourself.",ru:"Итак, расскажите немного о себе."},
+  {who:'b',en:"Sure. I've been working in IT support for about three years now.",ru:"Конечно. Я работаю в технической поддержке уже около трёх лет."},
+  {who:'a',en:"Great. What would you say is your biggest strength?",ru:"Отлично. В чём вы видите свою главную сильную сторону?"},
+  {who:'b',en:"I'd say I'm really good at troubleshooting under pressure.",ru:"Думаю, я очень хорошо умею решать проблемы в стрессовых ситуациях."},
+]},
+{title:'В магазине электроники', lines:[
+  {who:'a',en:"Are you looking for anything specific today?",ru:"Ищете сегодня что-то конкретное?"},
+  {who:'b',en:"Yeah, I need a programmer for repairing chips.",ru:"Да, мне нужен программатор для восстановления чипов."},
+  {who:'a',en:"We've got a couple of options, this one's pretty popular.",ru:"У нас есть пара вариантов, вот этот довольно популярен."},
+  {who:'b',en:"Does it support 3.3 volt chips?",ru:"Он поддерживает чипы на 3.3 вольта?"},
+]},
+];
+
+/* ============================================================
+   КАЗАХСКИЙ ЯЗЫК — второй язык обучения
+   ============================================================ */
+const VOCAB_KK = [
+// ===== НАЧАЛЬНЫЙ =====
+{e:"үй",t:"üy",r:"дом",x:"Біз көлге жақын үй сатып алдық.",xr:"Мы купили дом рядом с озером.",c:"beginner"},
+{e:"су",t:"su",r:"вода",x:"Маған бір стақан су беріңізші.",xr:"Дайте мне, пожалуйста, стакан воды.",c:"beginner"},
+{e:"дос",t:"dos",r:"друг",x:"Ол менің ең жақын досым.",xr:"Он мой самый близкий друг.",c:"beginner"},
+{e:"бақытты",t:"baqıttı",r:"счастливый",x:"Ол бүгін өте бақытты көрінеді.",xr:"Сегодня он выглядит очень счастливым.",c:"beginner"},
+{e:"отбасы",t:"otbası",r:"семья",x:"Менің отбасым Алматыда тұрады.",xr:"Моя семья живёт в Алматы.",c:"beginner"},
+{e:"мектеп",t:"mektep",r:"школа",x:"Балалар мектепке бірге жаяу барады.",xr:"Дети вместе идут в школу пешком.",c:"beginner"},
+{e:"бүгін",t:"bügin",r:"сегодня",x:"Бүгін не істейсің?",xr:"Что ты делаешь сегодня?",c:"beginner"},
+{e:"таң",t:"tañ",r:"утро",x:"Мен таңертең әрқашан кофе ішемін.",xr:"Я всегда пью кофе по утрам.",c:"beginner"},
+{e:"көмек",t:"kömek",r:"помощь",x:"Маған мұны көтеруге көмектесе аласың ба?",xr:"Ты можешь помочь мне это донести?",c:"beginner"},
+{e:"жұмыс",t:"jumıs",r:"работа",x:"Мен жұмысқа автобуспен барамын.",xr:"Я езжу на работу на автобусе.",c:"beginner"},
+{e:"жеу",t:"jeu",r:"есть, кушать",x:"Фильм басталмас бұрын тамақтанайық.",xr:"Давай поедим перед началом фильма.",c:"beginner"},
+{e:"ұйықтау",t:"uyıqtau",r:"спать",x:"Мен кеше жақсы ұйықтай алмадым.",xr:"Я плохо спал прошлой ночью.",c:"beginner"},
+{e:"сатып алу",t:"satıp alu",r:"покупать",x:"Бізге нан сатып алу керек.",xr:"Нам нужно купить хлеб.",c:"beginner"},
+{e:"жүру",t:"jüru",r:"ходить, идти",x:"Олар итін кешкісін серуендетеді.",xr:"Они выгуливают собаку каждый вечер.",c:"beginner"},
+{e:"жақсы көру",t:"jaqsı köru",r:"любить",x:"Маған бұл ән өте ұнайды.",xr:"Мне очень нравится эта песня.",c:"beginner"},
+{e:"үлкен",t:"ülken",r:"большой",x:"Олар үлкен пәтерде тұрады.",xr:"Они живут в большой квартире.",c:"beginner"},
+{e:"кішкентай",t:"kişkentay",r:"маленький",x:"Мысық баласы өте кішкентай.",xr:"Котёнок очень маленький.",c:"beginner"},
+{e:"суық",t:"suıq",r:"холодный",x:"Бүгін сыртта өте суық.",xr:"Сегодня на улице очень холодно.",c:"beginner"},
+{e:"ыстық",t:"ıstıq",r:"горячий",x:"Абайла, тәрелке ыстық.",xr:"Осторожно, тарелка горячая.",c:"beginner"},
+{e:"оңай",t:"oñay",r:"лёгкий, простой",x:"Бұл жаттығу өте оңай.",xr:"Это упражнение довольно простое.",c:"beginner"},
+{e:"қиын",t:"qïın",r:"трудный",x:"Тест ойлағанымнан қиын болды.",xr:"Тест оказался труднее, чем я думал.",c:"beginner"},
+{e:"ашу",t:"aşu",r:"открывать",x:"Терезені аша аласың ба?",xr:"Не мог бы ты открыть окно?",c:"beginner"},
+{e:"жабу",t:"jabu",r:"закрывать",x:"Есікті жауып кетші.",xr:"Закрой, пожалуйста, за собой дверь.",c:"beginner"},
+{e:"бастау",t:"bastau",r:"начинать",x:"Жиналыс түсте басталады.",xr:"Встреча начнётся в полдень.",c:"beginner"},
+{e:"бала",t:"bala",r:"ребёнок",x:"Әр бала жақсы білім алуға тиіс.",xr:"Каждый ребёнок заслуживает хорошего образования.",c:"beginner"},
+{e:"ақша",t:"aqşa",r:"деньги",x:"Оның қазір ақшасы көп емес.",xr:"У него сейчас немного денег.",c:"beginner"},
+{e:"уақыт",t:"uaqıt",r:"время",x:"Бізде уақыт аз қалды.",xr:"У нас осталось мало времени.",c:"beginner"},
+{e:"күн",t:"kün",r:"день, солнце",x:"Бұл ұзақ әрі шаршатқан күн болды.",xr:"Это был долгий и утомительный день.",c:"beginner"},
+{e:"түн",t:"tün",r:"ночь",x:"Түнде қала керемет көрінеді.",xr:"Ночью город выглядит потрясающе.",c:"beginner"},
+{e:"жақсы",t:"jaqsı",r:"хороший",x:"Бұл шынымен жақсы идея.",xr:"Это действительно хорошая идея.",c:"beginner"},
+{e:"жаман",t:"jaman",r:"плохой",x:"Саған жаман хабарым бар.",xr:"У меня для тебя плохие новости.",c:"beginner"},
+
+// ===== СРЕДНИЙ =====
+{e:"қол жеткізу",t:"qol jetkizu",r:"достигать",x:"Ол көп жылдық еңбектен кейін мақсатына қол жеткізді.",xr:"Она достигла цели после многолетнего труда.",c:"intermediate"},
+{e:"қарастыру",t:"qarastıru",r:"рассматривать",x:"Алдымен барлық нұсқаны қарастырайық.",xr:"Давайте сначала рассмотрим все варианты.",c:"intermediate"},
+{e:"мүмкіндік",t:"mümkindik",r:"возможность",x:"Бұл жұмыс мен үшін үлкен мүмкіндік.",xr:"Эта работа — большая возможность для меня.",c:"intermediate"},
+{e:"жақсарту",t:"jaqsartu",r:"улучшать",x:"Мен ағылшын тілімді жақсартқым келеді.",xr:"Я хочу улучшить свой английский.",c:"intermediate"},
+{e:"шешім",t:"şeşim",r:"решение",x:"Бұл қиын шешім болды.",xr:"Это было трудное решение.",c:"intermediate"},
+{e:"тәжірибе",t:"täjirbe",r:"опыт",x:"Оның бұл салада үлкен тәжірибесі бар.",xr:"У него большой опыт в этой сфере.",c:"intermediate"},
+{e:"қолжетімді",t:"qoljetimdi",r:"доступный",x:"Бұл орын қолжетімді ме?",xr:"Это место свободно?",c:"intermediate"},
+{e:"ұсыну",t:"usınu",r:"предлагать",x:"Ертең ертерек шығуды ұсынамын.",xr:"Предлагаю выйти завтра пораньше.",c:"intermediate"},
+{e:"күту",t:"kütü",r:"ожидать, ждать",x:"Біз мұндай жылы қарсы алуды күтпедік.",xr:"Мы не ожидали такого тёплого приёма.",c:"intermediate"},
+{e:"көтермелеу",t:"kötermeleu",r:"поощрять, ободрять",x:"Мұғалім оны жазуды жалғастыруға көтермеледі.",xr:"Учитель поощрял её продолжать писать.",c:"intermediate"},
+{e:"әсер",t:"äser",r:"влияние",x:"Жаңа саясат сатылымға үлкен әсер етті.",xr:"Новая политика сильно повлияла на продажи.",c:"intermediate"},
+{e:"мақсат",t:"maqsat",r:"цель",x:"Бұл жиналыстың мақсаты қандай?",xr:"Какова цель этой встречи?",c:"intermediate"},
+{e:"қарым-қатынас",t:"qarım-qatınas",r:"отношения",x:"Олардың сенімге негізделген берік қарым-қатынасы бар.",xr:"У них крепкие отношения, основанные на доверии.",c:"intermediate"},
+{e:"жағдай",t:"jağday",r:"ситуация",x:"Бұл жағдайды абайлап шешу керек.",xr:"Нужно аккуратно разобраться с этой ситуацией.",c:"intermediate"},
+{e:"артықшылық",t:"artıqşılıq",r:"преимущество",x:"Екі тілде сөйлеу үлкен артықшылық береді.",xr:"Знание двух языков даёт большое преимущество.",c:"intermediate"},
+{e:"шағымдану",t:"şağımdanu",r:"жаловаться",x:"Ол әрдайым ауа-райына шағымданады.",xr:"Он всегда жалуется на погоду.",c:"intermediate"},
+{e:"ақыр соңында",t:"aqır soñında",r:"в конце концов",x:"Ақыр соңында дұрыс шешімді таптық.",xr:"В конце концов мы нашли правильное решение.",c:"intermediate"},
+{e:"шешу",t:"şeşu",r:"справляться, решать",x:"Ол стрессті өте жақсы шешеді.",xr:"Она очень хорошо справляется со стрессом.",c:"intermediate"},
+{e:"болжау",t:"boljau",r:"предполагать",x:"Мен сен өзгеріс туралы білесің деп ойладым.",xr:"Я предполагал, что ты уже знаешь об изменении.",c:"intermediate"},
+{e:"сенімді",t:"senimdi",r:"надёжный",x:"Ол сенімді дос, әрдайым уақытында келеді.",xr:"Он надёжный друг, всегда приходит вовремя.",c:"intermediate"},
+{e:"жауапты",t:"jauaptı",r:"ответственный, отвечающий за",x:"Бұл жобаға кім жауапты?",xr:"Кто отвечает за этот проект?",c:"intermediate"},
+{e:"сендіру",t:"sendiru",r:"убеждать",x:"Оны сендіруге біраз уақыт кетті.",xr:"Потребовалось время, чтобы её убедить.",c:"intermediate"},
+{e:"күресу",t:"küresu",r:"бороться, испытывать трудности",x:"Көптеген студенттер алдымен грамматикамен күреседі.",xr:"Многие студенты сначала испытывают трудности с грамматикой.",c:"intermediate"},
+
+// ===== ПРОДВИНУТЫЙ =====
+{e:"дегенмен",t:"degenmen",r:"тем не менее",x:"Жоспар тәуекелді еді, дегенмен олар жалғастырды.",xr:"План был рискованным, тем не менее они продолжили.",c:"advanced"},
+{e:"екіұшты",t:"eki-uştı",r:"двусмысленный",x:"Оның жауабы әдейі екіұшты болды.",xr:"Его ответ был намеренно двусмысленным.",c:"advanced"},
+{e:"жан-жақты",t:"jan-jaqtı",r:"всесторонний",x:"Бізге бюджеттің жан-жақты шолуы қажет.",xr:"Нам нужен всесторонний анализ бюджета.",c:"advanced"},
+{e:"табанды",t:"tabandı",r:"стойкий, настойчивый",x:"Балалар таңғаларлықтай табанды бола алады.",xr:"Дети могут быть удивительно стойкими.",c:"advanced"},
+{e:"даулы",t:"daulı",r:"спорный",x:"Бұл экономистер арасында даулы тақырып.",xr:"Это спорная тема среди экономистов.",c:"advanced"},
+{e:"төмен бағалау",t:"tömen bağalau",r:"недооценивать",x:"Мұның қаншалықты қиын болатынын ешқашан төмен бағалама.",xr:"Никогда не недооценивай, насколько это будет сложно.",c:"advanced"},
+{e:"сәйкессіздік",t:"säykessizdik",r:"расхождение, несоответствие",x:"Екі есеп арасында сәйкессіздік бар.",xr:"Между этими двумя отчётами есть расхождение.",c:"advanced"},
+{e:"мұқият",t:"muqïyat",r:"дотошный, скрупулёзный",x:"Ол әрбір ұсақ-түйекке мұқият қарайды.",xr:"Она очень скрупулёзна в каждой мелочи.",c:"advanced"},
+{e:"елеулі",t:"eleuli",r:"существенный, значительный",x:"Бұл тоқсанда олар елеулі жетістікке жетті.",xr:"В этом квартале они добились существенного прогресса.",c:"advanced"},
+{e:"күрделі",t:"kürdeli",r:"сложный",x:"Ол процестің күрделі түсіндірмесін берді.",xr:"Он дал подробное объяснение процесса.",c:"advanced"},
+{e:"күмәнді",t:"kümändi",r:"скептичный",x:"Мен бұл жаңа жоспарға біраз күмәнмен қараймын.",xr:"Я немного скептически отношусь к этому новому плану.",c:"advanced"},
+{e:"кең тараған",t:"keñ tarağan",r:"распространённый",x:"Бұндай алаяқтық интернетте кең тараған.",xr:"Такой вид мошенничества очень распространён в интернете.",c:"advanced"},
+{e:"нашарлау",t:"naşarlau",r:"ухудшаться",x:"Оның денсаулығы тез нашарлай бастады.",xr:"Его здоровье начало быстро ухудшаться.",c:"advanced"},
+{e:"келісім",t:"kelisim",r:"консенсус, соглашение",x:"Комитет ұзақ талқылаудан кейін келісімге келді.",xr:"Комитет пришёл к соглашению после долгих обсуждений.",c:"advanced"},
+{e:"адалдық",t:"adaldıq",r:"честность, порядочность",x:"Ол адалдығымен танымал.",xr:"Он известен своей честностью.",c:"advanced"},
+
+// ===== ПУТЕШЕСТВИЯ =====
+{e:"жүк",t:"jük",r:"багаж",x:"Менің жүгім таспаға шықпады.",xr:"Мой багаж не приехал на ленту.",c:"travel"},
+{e:"ауыстыру рейсі",t:"auıstıru reysi",r:"пересадка (рейс)",x:"Стамбулда үш сағаттық ауыстыру рейсіміз бар.",xr:"У нас трёхчасовая пересадка в Стамбуле.",c:"travel"},
+{e:"кеден",t:"keden",r:"таможня",x:"Кеденнен өту мәңгілікке созылды.",xr:"Прохождение таможни заняло вечность.",c:"travel"},
+{e:"бағыт",t:"bağıt",r:"маршрут",x:"Толық сапар бағытын жібере аласың ба?",xr:"Можешь прислать мне полный маршрут поездки?",c:"travel"},
+{e:"тіркелу",t:"tirkelu",r:"регистрация, заселение",x:"Біз сағат үштен ертерек тіркеле алмаймыз.",xr:"Мы не можем заселиться раньше трёх.",c:"travel"},
+{e:"брондау",t:"brondau",r:"бронирование",x:"Менде Ақим есіміне брон бар.",xr:"У меня бронь на имя Аким.",c:"travel"},
+{e:"валюта айырбастау",t:"valyuta ayırbastau",r:"обмен валюты",x:"Ең жақын валюта айырбастау пункті қайда?",xr:"Где ближайший обменник валюты?",c:"travel"},
+{e:"платформа",t:"platforma",r:"платформа (вокзал)",x:"Пойыз 4-платформадан кетеді.",xr:"Поезд отправляется с четвёртой платформы.",c:"travel"},
+{e:"сувенир",t:"suvenir",r:"сувенир",x:"Отбасыма бірнеше сувенир сатып алдым.",xr:"Я купил несколько сувениров для семьи.",c:"travel"},
+{e:"турист",t:"turist",r:"турист",x:"Бұл мейрамхана нағыз турист аулайтын жер.",xr:"Этот ресторан — настоящая туристическая ловушка.",c:"travel"},
+{e:"ұшақ",t:"uşaq",r:"самолёт",x:"Ұшағымыз үшке кешігіп тұр.",xr:"Наш самолёт задерживается на три часа.",c:"travel"},
+{e:"пойыз",t:"poyız",r:"поезд",x:"Пойызбен саяхаттау маған ұнайды.",xr:"Мне нравится путешествовать на поезде.",c:"travel"},
+{e:"қонақүй",t:"qonaqüy",r:"гостиница",x:"Қонақүйді екі ай бұрын брондадық.",xr:"Мы забронировали гостиницу за два месяца.",c:"travel"},
+{e:"виза",t:"viza",r:"виза",x:"Кейбір елдердің азаматтарына келгенде виза беріледі.",xr:"Гражданам некоторых стран визу выдают по прибытии.",c:"travel"},
+{e:"шығу есігі",t:"şığu esigi",r:"выход на посадку",x:"Біздің шығу есігіміз B12-ге өзгерді.",xr:"Наш выход на посадку сменился на B12.",c:"travel"},
+
+// ===== РАБОТА =====
+{e:"мерзім",t:"merzim",r:"крайний срок",x:"Бұл есептің мерзімі жұма.",xr:"Крайний срок сдачи отчёта — пятница.",c:"work"},
+{e:"әріптес",t:"äriptes",r:"коллега",x:"Мен мұны бүгін таңертең әріптесіммен талқыладым.",xr:"Я обсудил это с коллегой сегодня утром.",c:"work"},
+{e:"жалақы",t:"jalaqı",r:"зарплата",x:"Олар бәсекеге қабілетті жалақы ұсынды.",xr:"Они предложили конкурентную зарплату.",c:"work"},
+{e:"түйіндеме",t:"tüyindeme",r:"резюме",x:"Өтініш бермес бұрын түйіндемеңді жаңарт.",xr:"Обнови резюме перед подачей заявки.",c:"work"},
+{e:"сұхбат",t:"suqbat",r:"собеседование",x:"Сұхбат ойлағанымнан жақсы өтті.",xr:"Собеседование прошло лучше, чем я ожидал.",c:"work"},
+{e:"жиналыс",t:"jïnalıs",r:"встреча, совещание",x:"Жиналысты сағат екіге көшірейік.",xr:"Давайте перенесём встречу на два часа.",c:"work"},
+{e:"қашықтан жұмыс",t:"qaşıqtan jumıs",r:"удалённая работа",x:"Қашықтан жұмыс оған көбірек икемділік берді.",xr:"Удалённая работа дала ему больше гибкости.",c:"work"},
+{e:"басшы",t:"başşı",r:"руководитель",x:"Алдымен басшыңнан рұқсат сұра.",xr:"Сначала спроси разрешения у руководителя.",c:"work"},
+{e:"келіссөз жүргізу",t:"kelissöz jürgizu",r:"вести переговоры",x:"Бізге жақсырақ баға туралы келіссөз жүргізу керек.",xr:"Нам нужно договориться о лучшей цене.",c:"work"},
+{e:"жұмыстан кету",t:"jumıstan ketu",r:"увольняться",x:"Ол өткен айда жұмыстан кетуге шешім қабылдады.",xr:"В прошлом месяце она решила уволиться.",c:"work"},
+{e:"клиент",t:"klïent",r:"клиент",x:"Бүгін түстен кейін жаңа клиентпен кездесеміз.",xr:"Сегодня днём у нас встреча с новым клиентом.",c:"work"},
+
+// ===== ЕДА =====
+{e:"рецепт",t:"retsept",r:"рецепт",x:"Сол макарон рецептін жібере аласың ба?",xr:"Можешь скинуть мне тот рецепт пасты?",c:"food"},
+{e:"ащы",t:"aşşı",r:"острый",x:"Абайла, бұл тұздық өте ащы.",xr:"Осторожно, этот соус очень острый.",c:"food"},
+{e:"дүкен",t:"düken",r:"магазин",x:"Дүкенге соғуым керек.",xr:"Мне нужно заскочить в магазин.",c:"food"},
+{e:"аш",t:"aş",r:"голодный",x:"Қазір тамақтанайық, мен ашпын.",xr:"Давай уже поедим, я голоден.",c:"food"},
+{e:"тоқ",t:"toq",r:"сытый",x:"Мен соншалықты тойдым, тағы жей алмаймын.",xr:"Я так наелся, что больше не могу есть.",c:"food"},
+{e:"дәмсіз",t:"dämsiz",r:"безвкусный",x:"Тұзсыз көже біраз дәмсіз болды.",xr:"Суп был немного пресным без соли.",c:"food"},
+{e:"есеп",t:"esep",r:"счёт (в кафе)",x:"Есепті бөлісе аламыз ба?",xr:"Можем мы разделить счёт?",c:"food"},
+{e:"дәмхана",t:"dämhana",r:"кафе, закусочная",x:"Біз көбіне осы дәмханаға барамыз.",xr:"Мы часто ходим в это кафе.",c:"food"},
+{e:"таңғы ас",t:"tañğı as",r:"завтрак",x:"Таңғы асқа не жедің?",xr:"Что ты съел на завтрак?",c:"food"},
+{e:"түскі ас",t:"tüski as",r:"обед",x:"Түскі асты бірге жейік.",xr:"Давай пообедаем вместе.",c:"food"},
+{e:"кешкі ас",t:"keşki as",r:"ужин",x:"Кешкі ас сегізде дайын болады.",xr:"Ужин будет готов в восемь.",c:"food"},
+
+// ===== ТЕХНИКА (расширенный технический блок) =====
+{e:"кернеу",t:"kerneu",r:"напряжение",x:"Платаны ұстамас бұрын кернеуді тексер.",xr:"Проверь напряжение, прежде чем трогать плату.",c:"tech"},
+{e:"ток",t:"tok",r:"ток (электрический)",x:"Тұтынатын ток күтілгеннен жоғары.",xr:"Потребляемый ток выше, чем ожидалось.",c:"tech"},
+{e:"батарея",t:"batareya",r:"батарея, аккумулятор",x:"Телефонымның батареясы тез бітеді.",xr:"Батарея на моём телефоне разряжается быстро.",c:"tech"},
+{e:"зарядтау",t:"zaryadtau",r:"заряжать",x:"Батареяны толық зарядтауға төрт сағат кетеді.",xr:"Батарея заряжается около четырёх часов.",c:"tech"},
+{e:"жаңарту",t:"jañartu",r:"обновление",x:"Телефоныңа жаңа жаңарту бар.",xr:"Для твоего телефона доступно новое обновление.",c:"tech"},
+{e:"құпия сөз",t:"qupïya söz",r:"пароль",x:"Мен қайтадан құпия сөзімді ұмытып қалдым.",xr:"Я снова забыл свой пароль.",c:"tech"},
+{e:"сақтық көшірме",t:"saqtıq köşirme",r:"резервная копия",x:"Суреттеріңнің сақтық көшірмесін әрдайым сақта.",xr:"Всегда храни резервную копию своих фотографий.",c:"tech"},
+{e:"сымсыз",t:"sımsız",r:"беспроводной",x:"Бұл сымсыз құлаққап керемет естіледі.",xr:"Эти беспроводные наушники звучат отлично.",c:"tech"},
+{e:"қайта прошивкалау",t:"qayta proşivkalau",r:"перепрошивка",x:"Қайта прошивкалау кейде жүктелу мәселесін шешеді.",xr:"Перепрошивка иногда решает проблемы с загрузкой.",c:"tech"},
+{e:"плата",t:"plata",r:"плата (печатная)",x:"Платада байланыстырғыштың жанында сызат бар.",xr:"На плате есть трещина рядом с разъёмом.",c:"tech"},
+{e:"резистор",t:"rezistor",r:"резистор",x:"Платадағы күйген резисторды ауыстыр.",xr:"Замени сгоревший резистор на плате.",c:"tech"},
+{e:"конденсатор",t:"kondensator",r:"конденсатор",x:"Ісінген конденсатор жиі кездесетін ақаудың белгісі.",xr:"Вздутый конденсатор — частый признак неисправности.",c:"tech"},
+{e:"дәнекерлеу",t:"dänekerleu",r:"пайка",x:"Оның дәнекерлеу шеберлігі тәжірибемен жақсарды.",xr:"Его навыки пайки улучшились с практикой.",c:"tech"},
+{e:"контроллер",t:"kontroller",r:"контроллер",x:"Біз өткен аптада мотор контроллерін қайта прошивкаладық.",xr:"На прошлой неделе мы перепрошили контроллер двигателя.",c:"tech"},
+{e:"қосқыш",t:"qosqış",r:"разъём, коннектор",x:"Қосқыш дұрыс жалғанғанын тексер.",xr:"Проверь, правильно ли подключён разъём.",c:"tech"},
+
+// ===== ПОВСЕДНЕВНОСТЬ =====
+{e:"үй жұмысы",t:"üy jumısı",r:"домашние дела",x:"Мен сенбі сайын үй жұмысын жасаймын.",xr:"Я делаю домашние дела каждую субботу.",c:"daily"},
+{e:"тапсырма",t:"tapsırma",r:"поручение, дело",x:"Бүгін бірнеше тапсырмам бар.",xr:"У меня сегодня есть пара дел.",c:"daily"},
+{e:"жол жүру уақыты",t:"jol jüru uaqıtı",r:"дорога на работу/учёбу",x:"Жол жүру уақытым қырық минуттай алады.",xr:"Моя дорога на работу занимает около сорока минут.",c:"daily"},
+{e:"кір жуу",t:"kir juu",r:"стирка",x:"Маған әлі кір жуу керек.",xr:"Мне ещё нужно постирать бельё.",c:"daily"},
+{e:"көрші",t:"körşi",r:"сосед",x:"Біздің көршіміз өте достық.",xr:"Наш сосед очень дружелюбный.",c:"daily"},
+{e:"күнделікті тәртіп",t:"kündelikti tärtip",r:"распорядок дня",x:"Менің таңертеңгі тәртібім өте қарапайым.",xr:"У меня довольно простой утренний распорядок.",c:"daily"},
+{e:"кездесу",t:"kezdesu",r:"назначенная встреча",x:"Менде сағат бесте тіс дәрігеріне жазылу бар.",xr:"У меня запись к стоматологу в пять.",c:"daily"},
+{e:"шот",t:"şot",r:"счёт (за услуги)",x:"Бұл ай электр шоты жоғарылады.",xr:"Счёт за электричество в этом месяце вырос.",c:"daily"},
+{e:"үй иесі",t:"üy ïesi",r:"арендодатель",x:"Үй иесі ақыры жылытқышты жөндеді.",xr:"Арендодатель наконец починил обогреватель.",c:"daily"},
+{e:"шаршаған",t:"şarşağan",r:"измотанный, уставший",x:"Ұзақ жаяу жүрістен кейін мен шаршадым.",xr:"Я вымотан после этой долгой прогулки.",c:"daily"},
+{e:"әдет",t:"ädet",r:"привычка",x:"Оянғанда су ішу — жақсы әдет.",xr:"Пить воду сразу после пробуждения — хорошая привычка.",c:"daily"},
+
+// ===== РАЗГОВОРНЫЙ (казахский повседневный стиль) =====
+{e:"Сәлем!",t:"Sälem!",r:"Привет!",x:"Сәлем! Қалайсың?",xr:"Привет! Как ты?",c:"slang"},
+{e:"Қалайсың?",t:"Qalaysıñ?",r:"Как ты? (неформально)",x:"Қалайсың, көптен көрінбейсің ғой?",xr:"Как ты, что-то тебя давно не видно?",c:"slang"},
+{e:"Жаман емес",t:"Jaman emes",r:"Неплохо",x:"Жаман емес, рахмет, өзің ше?",xr:"Неплохо, спасибо, а ты?",c:"slang"},
+{e:"Жарайды",t:"Jaraydı",r:"Хорошо, ладно",x:"Жарайды, сағат жетіде кездесейік.",xr:"Хорошо, встретимся в семь.",c:"slang"},
+{e:"Байқа!",t:"Bayqa!",r:"Осторожно! Смотри!",x:"Байқа, жол тайғақ.",xr:"Осторожно, дорога скользкая.",c:"slang"},
+{e:"Білмеймін",t:"Bilmeymin",r:"Не знаю",x:"Ол қашан келетінін білмеймін.",xr:"Я не знаю, когда он придёт.",c:"slang"},
+{e:"Кешір",t:"Keşir",r:"Извини",x:"Кешір, мен кешігіп қалдым.",xr:"Извини, я опоздал.",c:"slang"},
+{e:"Рахмет",t:"Raqmet",r:"Спасибо",x:"Көмегің үшін рахмет.",xr:"Спасибо за помощь.",c:"slang"},
+{e:"Оқасы жоқ",t:"Oqası joq",r:"Ничего страшного",x:"Оқасы жоқ, бәрі дұрыс болады.",xr:"Ничего страшного, всё будет хорошо.",c:"slang"},
+{e:"Шаршадым",t:"Şarşadım",r:"Я устал",x:"Бүгін жұмыстан кейін қатты шаршадым.",xr:"Сегодня после работы я сильно устал.",c:"slang"},
+{e:"Кеттік!",t:"Kettik!",r:"Пошли! Поехали!",x:"Кеттік, автобус келді.",xr:"Пошли, автобус приехал.",c:"slang"},
+{e:"Түсінікті",t:"Tüsinikti",r:"Понятно, ясно",x:"Түсінікті, мен бәрін істеймін.",xr:"Понятно, я всё сделаю.",c:"slang"},
+{e:"Не бар?",t:"Ne bar?",r:"Что нового? Что случилось?",x:"Не бар, бәрі жақсы ма?",xr:"Что нового, всё в порядке?",c:"slang"},
+{e:"Дәл солай",t:"Däl solay",r:"Именно так, точно",x:"Дәл солай, сен дұрыс айтасың.",xr:"Именно так, ты прав.",c:"slang"},
+];
+
+const GRAMMAR_KK = [
+{id:'kk_copula', title:'Есімдіктер және "болу" (нулевая связка)', level:'A1',
+ explain:'В настоящем времени казахский язык обычно обходится без глагола "быть" — вместо него к слову добавляется личное окончание: мен дәрігермін (я врач), сен студентсің (ты студент), ол мұғалім (он учитель).',
+ examples:['Мен студентпін. — Я студент.','Сен дәрігерсің. — Ты врач.','Біз достармыз. — Мы друзья.'],
+ ex:[{q:'Мен ____ (сату? нет — учитель) мұғалім____. Заполните личное окончание: Мен мұғалім___.',a:'мін'},{q:'Сен студент___. (окончание для "сен")',a:'сің'}]},
+{id:'kk_possessive', title:'Тәуелдік жалғауы (притяжательные суффиксы)', level:'A1',
+ explain:'Принадлежность выражается суффиксом, а не отдельным словом: үй-ім (мой дом), үй-ің (твой дом), үй-і (его/её дом). Форма суффикса зависит от гармонии гласных.',
+ examples:['менің үйім — мой дом','сенің кітабың — твоя книга','оның достары — его друзья'],
+ ex:[{q:'үй + суффикс "мой" = үй___',a:'ім'},{q:'кітап + суффикс "твой" = кітаб___',a:'ың'}]},
+{id:'kk_cases', title:'Септік жалғаулары (падежи)', level:'A2',
+ explain:'В казахском 7 падежей, каждый выражается суффиксом: Атау (кто? что?) — без окончания, Ілік (чей?) -ның/-нің, Барыс (куда? кому?) -ға/-ге/-қа/-ке, Табыс (кого? что?) -ны/-ні/-ды/-ді, Жатыс (где?) -да/-де/-та/-те, Шығыс (откуда?) -дан/-ден/-тан/-тен, Көмектес (с кем/чем?) -мен/-бен/-пен.',
+ examples:['мектеп-ке бару — идти в школу (барыс)','үй-де болу — быть дома (жатыс)','дос-пен сөйлесу — говорить с другом (көмектес)'],
+ ex:[{q:'мектеп + барыс жалғауы (куда?) = мектеп___',a:'ке'},{q:'үй + жатыс жалғауы (где?) = үй___',a:'де'}]},
+{id:'kk_plural', title:'Көптік жалғауы (множественное число)', level:'A1',
+ explain:'Суффикс множественного числа -лар/-лер/-дар/-дер/-тар/-тер выбирается по гармонии гласных и последнему звуку слова.',
+ examples:['кітап — кітаптар (книги)','үй — үйлер (дома)','бала — балалар (дети)'],
+ ex:[{q:'дос (друг) во множественном числе: дос___',a:'тар'},{q:'үй во множественном числе: үй___',a:'лер'}]},
+{id:'kk_past', title:'Өткен шақ (прошедшее время)', level:'A2',
+ explain:'Основное прошедшее время образуется суффиксом -ды/-ді/-ты/-ті + личное окончание: бар-ды-м (я пошёл), кел-ді-ң (ты пришёл).',
+ examples:['Мен мектепке бардым. — Я пошёл в школу.','Ол кеше келді. — Он пришёл вчера.'],
+ ex:[{q:'бару (идти) + прошедшее время + "я": бар___м',a:'ды'},{q:'келу (приходить) + прошедшее + "он": кел___',a:'ді'}]},
+{id:'kk_future', title:'Келер шақ (будущее время)', level:'A2',
+ explain:'Одна из форм будущего времени образуется суффиксом -а/-е/-й + личное окончание: бар-а-мын (я пойду), кел-е-мін (я приду).',
+ examples:['Мен ертең барамын. — Я пойду завтра.','Біз кешке келеміз. — Мы придём вечером.'],
+ ex:[{q:'бару + будущее время + "я": бар___мын',a:'а'},{q:'келу + будущее + "мы": кел___міз',a:'е'}]},
+{id:'kk_question', title:'Сұраулық шылау (вопросительная частица)', level:'A1',
+ explain:'Вопрос без вопросительного слова образуется частицей ма/ме/ба/бе/па/пе, которая ставится после слова и согласуется по гармонии гласных.',
+ examples:['Сен келесің бе? — Ты придёшь?','Ол дәрігер ме? — Он врач?','Бұл дұрыс па? — Это правильно?'],
+ ex:[{q:'Сен студентсің ___? (частица)',a:'бе'},{q:'Ол мұғалім ___? (частица)',a:'ме'}]},
+];
+
+const PHRASES_KK = [
+{e:"Сәлем, қалың қалай?",r:"Привет, как дела?",note:"неформальное приветствие"},
+{e:"Жақсы, рахмет.",r:"Хорошо, спасибо.",note:""},
+{e:"Ештеңе етпейді.",r:"Ничего страшного.",note:""},
+{e:"Түсінбедім, қайталай аласыз ба?",r:"Не понял(а), можете повторить?",note:""},
+{e:"Көмектесе аласыз ба?",r:"Можете помочь?",note:""},
+{e:"Бір минут күте тұрыңыз.",r:"Подождите минутку.",note:""},
+{e:"Мен келісемін.",r:"Я согласен(на).",note:""},
+{e:"Білмеймін, кешірім сұраймын.",r:"Не знаю, прошу прощения.",note:""},
+{e:"Асықпаңыз.",r:"Не торопитесь.",note:""},
+{e:"Сау болыңыз!",r:"До свидания!",note:""},
+{e:"Ертең көріскенше.",r:"До завтра.",note:""},
+{e:"Қандай жаңалық бар?",r:"Какие новости?",note:"casual"},
+{e:"Маған бәрі бір.",r:"Мне всё равно.",note:""},
+{e:"Тамаша!",r:"Отлично! Прекрасно!",note:""},
+{e:"Өкінішке орай, олай емес.",r:"К сожалению, это не так.",note:""},
+];
+
+const DIALOGUES_KK = [
+{title:'Кафеде', lines:[
+  {who:'a',en:"Сәлеметсіз бе! Не тапсырасыз?",ru:"Здравствуйте! Что будете заказывать?"},
+  {who:'b',en:"Бір орташа латте, өзіммен алып кетемін.",ru:"Один латте среднего размера, с собой."},
+  {who:'a',en:"Жақсы. Тағы бірдеңе керек пе?",ru:"Хорошо. Что-нибудь ещё нужно?"},
+  {who:'b',en:"Жоқ, сол жеткілікті, рахмет.",ru:"Нет, этого достаточно, спасибо."},
+]},
+{title:'Достармен кездесу', lines:[
+  {who:'a',en:"Сәлем! Көптен көрінбейсің ғой, қалайсың?",ru:"Привет! Давно тебя не видно, как ты?"},
+  {who:'b',en:"Жақсымын, жұмыспен бас көтермей жүрмін.",ru:"Хорошо, весь в работе с головой."},
+  {who:'a',en:"Түсінемін. Жақында кездесейік.",ru:"Понимаю. Давай скоро встретимся."},
+  {who:'b',en:"Жарайды, демалыс күні бос па едің?",ru:"Хорошо, ты свободен на выходных?"},
+]},
+{title:'Дүкенде', lines:[
+  {who:'a',en:"Бір нәрсе іздеп жүрсіз бе?",ru:"Вы что-то конкретное ищете?"},
+  {who:'b',en:"Иә, чиптерді жөндеуге арналған программатор керек еді.",ru:"Да, мне нужен программатор для восстановления чипов."},
+  {who:'a',en:"Бізде бірнеше нұсқа бар, мынау өте танымал.",ru:"У нас есть несколько вариантов, вот этот очень популярен."},
+  {who:'b',en:"3.3 вольттық чиптерді қолдай ма?",ru:"Он поддерживает чипы на 3.3 вольта?"},
+]},
+];
+
+const ACHIEVEMENTS = [
+{id:'first_word', ic:'🌱', t:'Первый шаг', d:'Выучите первое слово', check:s=>s.learned.length>=1},
+{id:'words_25', ic:'📚', t:'Начинающий', d:'Выучите 25 слов', check:s=>s.learned.length>=25},
+{id:'words_100', ic:'🎓', t:'Знаток', d:'Выучите 100 слов', check:s=>s.learned.length>=100},
+{id:'words_all', ic:'👑', t:'Мастер словаря', d:'Выучите все слова', check:s=>s.learned.length>=(VOCAB_EN.length+VOCAB_KK.length)},
+{id:'streak_3', ic:'🔥', t:'Разогрелся', d:'Занимайтесь 3 дня подряд', check:s=>s.streak>=3},
+{id:'streak_7', ic:'⚡', t:'Неделя силы', d:'Серия из 7 дней', check:s=>s.streak>=7},
+{id:'streak_30', ic:'🏆', t:'Железная воля', d:'Серия из 30 дней', check:s=>s.streak>=30},
+{id:'test_10', ic:'📝', t:'Тестировщик', d:'Пройдите 10 тестов', check:s=>s.testsDone>=10},
+{id:'perfect_test', ic:'💯', t:'Идеально', d:'Пройдите тест без единой ошибки', check:s=>s.perfectTests>=1},
+{id:'fav_10', ic:'⭐', t:'Коллекционер', d:'Добавьте 10 слов в избранное', check:s=>s.favorites.length>=10},
+{id:'grammar_5', ic:'📐', t:'Грамматик', d:'Изучите 5 тем грамматики', check:s=>s.grammarViewed.length>=5},
+{id:'level_5', ic:'🚀', t:'Растущий', d:'Достигните 5 уровня', check:s=>levelFromXp(s.xp).level>=5},
+];
+
+/* ---------- состояние приложения ---------- */
+const DEFAULT_STATE = {
+  learned:[], favorites:[], mistakes:{},
+  xp:0, streak:0, lastActiveDate:null, activityLog:{},
+  testsDone:0, perfectTests:0, grammarViewed:[], unlocked:[],
+  theme:'light', fontScale:1, dailyGoal:10, learnLang:'en',
+  chatHistory:{en:[], kk:[]},
+};
+let STATE = loadState();
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem('engup_state');
+    if(raw) return {...DEFAULT_STATE, ...JSON.parse(raw)};
+  }catch(e){}
+  return {...DEFAULT_STATE};
+}
+function saveState(){
+  localStorage.setItem('engup_state', JSON.stringify(STATE));
+}
+function levelFromXp(xp){
+  const level = Math.floor(xp/150)+1;
+  const cur = xp - (level-1)*150;
+  return {level, cur, need:150};
+}
+function addXp(n){
+  STATE.xp += n; saveState(); checkAchievements();
+}
+function touchActivity(){
+  const key = todayKey();
+  const y = todayKey(new Date(Date.now()-86400000));
+  if(STATE.lastActiveDate !== key){
+    STATE.streak = (STATE.lastActiveDate === y) ? STATE.streak+1 : 1;
+    STATE.lastActiveDate = key;
+  }
+  STATE.activityLog[key] = (STATE.activityLog[key]||0)+1;
+  saveState();
+}
+function checkAchievements(){
+  ACHIEVEMENTS.forEach(a=>{
+    if(!STATE.unlocked.includes(a.id) && a.check(STATE)){
+      STATE.unlocked.push(a.id);
+      toast(`Достижение открыто: ${a.t} ${a.ic}`, 'ok', '🏅');
+    }
+  });
+  saveState();
+}
+function wordKey(w){ return typeof w === 'string' ? w : w.e; }
+function isLearned(w){ return STATE.learned.includes(wordKey(w)); }
+function isFav(w){ return STATE.favorites.includes(wordKey(w)); }
+function toggleLearned(w){
+  const k = wordKey(w);
+  const i = STATE.learned.indexOf(k);
+  if(i>=0){ STATE.learned.splice(i,1); } else { STATE.learned.push(k); addXp(5); touchActivity(); toast('Слово выучено! +5 XP'); }
+  saveState(); checkAchievements();
+}
+function toggleFav(w){
+  const k = wordKey(w);
+  const i = STATE.favorites.indexOf(k);
+  if(i>=0) STATE.favorites.splice(i,1); else STATE.favorites.push(k);
+  saveState(); checkAchievements();
+}
+function recordMistake(w){
+  const k = wordKey(w);
+  STATE.mistakes[k] = (STATE.mistakes[k]||0)+1;
+  saveState();
+}
+function getWeakWords(){
+  return activeVocab().filter(w=>STATE.mistakes[wordKey(w)]>0)
+    .sort((a,b)=>(STATE.mistakes[wordKey(b)]||0)-(STATE.mistakes[wordKey(a)]||0));
+}
+
+/* ---------- переключение языка обучения ---------- */
+const LANGS = {
+  en: {label:'English', short:'EN', sub:'Разговорный английский'},
+  kk: {label:'Қазақша', short:'ҚАЗ', sub:'Қазақ тілі — разговорный казахский'},
+};
+function activeVocab(){ return STATE.learnLang === 'kk' ? VOCAB_KK : VOCAB_EN; }
+function activeGrammar(){ return STATE.learnLang === 'kk' ? GRAMMAR_KK : GRAMMAR_EN; }
+function activePhrases(){ return STATE.learnLang === 'kk' ? PHRASES_KK : PHRASES_EN; }
+function activeDialogues(){ return STATE.learnLang === 'kk' ? DIALOGUES_KK : DIALOGUES_EN; }
+function setLearnLang(lang){
+  if(STATE.learnLang === lang) return;
+  STATE.learnLang = lang;
+  saveState();
+  renderLangSwitch();
+  try{ navigate(CURRENT_VIEW); }catch(e){ console.error('navigate failed after language switch:', e); navigate('home'); }
+  toast(`Язык обучения переключён на: ${LANGS[lang].label}`);
+}
+function renderLangSwitch(){
+  try{
+    const html = Object.keys(LANGS).map(k=>
+      `<button class="${STATE.learnLang===k?'active':''}" onclick="setLearnLang('${k}')">${LANGS[k].short}</button>`
+    ).join('');
+    const host = $('#lang-switch'); if(host) host.innerHTML = html;
+    const hostM = $('#lang-switch-mobile'); if(hostM) hostM.innerHTML = html;
+    const hostF = $('#lang-fab'); if(hostF) hostF.innerHTML = html;
+    const sub = $('#brand-sub'); if(sub) sub.textContent = LANGS[STATE.learnLang].sub;
+  }catch(e){ console.error('renderLangSwitch failed:', e); }
+}
+
+
+/* ---------- навигация ---------- */
+const NAV = [
+  {id:'home', ic:'🏠', label:'Главная'},
+  {id:'words', ic:'📖', label:'Изучение слов'},
+  {id:'flash', ic:'🔄', label:'Карточки'},
+  {id:'tests', ic:'✅', label:'Тесты'},
+  {id:'practice', ic:'🎯', label:'Практика'},
+  {id:'grammar', ic:'📐', label:'Грамматика'},
+  {id:'speaking', ic:'🗣️', label:'Разговорная практика'},
+  {id:'chat', ic:'💬', label:'Чат с ИИ'},
+  {id:'achievements', ic:'🏅', label:'Достижения'},
+  {id:'settings', ic:'⚙️', label:'Настройки'},
+];
+let CURRENT_VIEW = 'home';
+
+function renderNav(){
+  const nav = $('#nav');
+  nav.innerHTML = NAV.map(n=>`
+    <button class="nav-item ${CURRENT_VIEW===n.id?'active':''}" onclick="navigate('${n.id}')">
+      <span class="ic">${n.ic}</span><span>${n.label}</span>
+    </button>`).join('');
+  $('#streak-count').textContent = STATE.streak;
+}
+
+function navigate(view){
+  CURRENT_VIEW = view;
+  closeSidebar();
+  renderNav();
+  const renderers = {
+    home: renderHome, words: renderWords, flash: renderFlash, tests: renderTestsHome,
+    practice: renderPractice, grammar: renderGrammar, speaking: renderSpeaking, chat: renderChat,
+    achievements: renderAchievements, settings: renderSettings,
+  };
+  window.scrollTo(0,0);
+  (renderers[view] || renderHome)();
+}
+
+function openSidebar(){ $('#sidebar').classList.add('open'); $('#scrim').classList.add('show'); }
+function closeSidebar(){ $('#sidebar').classList.remove('open'); $('#scrim').classList.remove('show'); }
+
+function toggleTheme(){
+  STATE.theme = STATE.theme === 'dark' ? 'light' : 'dark';
+  applyTheme(); saveState();
+}
+function applyTheme(){
+  document.documentElement.setAttribute('data-theme', STATE.theme);
+  $('#theme-icon') && ($('#theme-icon').textContent = STATE.theme==='dark' ? '☀️' : '🌙');
+  $('#theme-label') && ($('#theme-label').textContent = STATE.theme==='dark' ? 'Светлая тема' : 'Тёмная тема');
+}
+function applyFontScale(){
+  document.documentElement.style.setProperty('--font-scale', STATE.fontScale);
+}
+
+/* ============================================================
+   ГЛАВНАЯ
+   ============================================================ */
+function renderHome(){
+  const total = activeVocab().length;
+  const learnedCount = STATE.learned.length;
+  const pct = total ? Math.round(learnedCount/total*100) : 0;
+  const lvl = levelFromXp(STATE.xp);
+  const totalTests = STATE.testsDone;
+  const acc = totalTests>0 ? Math.round((STATE.perfectTests/totalTests)*100) : null;
+
+  const days = [];
+  for(let i=27;i>=0;i--){
+    const d = new Date(Date.now()-i*86400000);
+    const k = todayKey(d);
+    const c = STATE.activityLog[k]||0;
+    const lvl4 = c===0?0:c<3?1:c<6?2:c<10?3:4;
+    days.push(`<div class="heat-cell" data-lvl="${lvl4}" title="${k}: ${c}"></div>`);
+  }
+
+  $('#view').innerHTML = `
+    <div class="view-head">
+      <div class="eyebrow">Добро пожаловать</div>
+      <h2>Погнали учить английский 🚀</h2>
+      <p>Ваш ежедневный прогресс, статистика и быстрый доступ к занятиям.</p>
+    </div>
+
+    <div class="grid grid-4" style="margin-bottom:26px;">
+      <div class="card stat-card">
+        <div class="ic" style="background:var(--green-100);color:var(--green-700);">📚</div>
+        <div class="num">${learnedCount}<span style="font-size:15px;color:var(--ink-faint);"> / ${total}</span></div>
+        <div class="label">Слов изучено</div>
+      </div>
+      <div class="card stat-card">
+        <div class="ic" style="background:var(--amber-100);color:var(--amber-600);">🔥</div>
+        <div class="num">${STATE.streak}</div>
+        <div class="label">Дней подряд</div>
+      </div>
+      <div class="card stat-card">
+        <div class="ic" style="background:var(--coral-100);color:var(--coral-500);">🎯</div>
+        <div class="num">${acc===null?'—':acc+'%'}</div>
+        <div class="label">Точность тестов</div>
+      </div>
+      <div class="card stat-card">
+        <div class="ic" style="background:var(--green-100);color:var(--green-700);">⚡</div>
+        <div class="num">Ур. ${lvl.level}</div>
+        <div class="label">${lvl.cur} / ${lvl.need} XP</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <h3 style="font-size:16px;margin-bottom:14px;">Дневная цель</h3>
+        <p style="font-size:13px;color:var(--ink-soft);margin-bottom:10px;">Сегодня изучено: ${STATE.activityLog[todayKey()]||0} / ${STATE.dailyGoal}</p>
+        <div class="progress-track"><div class="progress-fill" style="width:${Math.min(100,((STATE.activityLog[todayKey()]||0)/STATE.dailyGoal)*100)}%"></div></div>
+        <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="navigate('words')">📖 Учить слова</button>
+          <button class="btn btn-ghost" onclick="navigate('tests')">✅ Пройти тест</button>
+        </div>
+        <h3 style="font-size:14px;margin:22px 0 10px;">Активность за 4 недели</h3>
+        <div class="heatmap">${days.join('')}</div>
+      </div>
+      <div class="card">
+        <h3 style="font-size:16px;margin-bottom:14px;">Общий прогресс словаря</h3>
+        <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <p style="font-size:12.5px;color:var(--ink-soft);margin-top:8px;">${pct}% всего словаря выучено</p>
+        <h3 style="font-size:14px;margin:22px 0 10px;">По категориям</h3>
+        ${CATEGORIES.map(c=>{
+          const words = activeVocab().filter(w=>w.c===c.id);
+          const learned = words.filter(isLearned).length;
+          const p = words.length?Math.round(learned/words.length*100):0;
+          return `<div style="margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px;">
+              <span>${c.ic} ${c.name}</span><span style="color:var(--ink-faint);">${learned}/${words.length}</span>
+            </div>
+            <div class="progress-track" style="height:5px;"><div class="progress-fill" style="width:${p}%"></div></div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+/* ============================================================
+   ИЗУЧЕНИЕ СЛОВ
+   ============================================================ */
+let wordsFilter = {cat:'all', search:'', onlyFav:false, onlyLearned:false};
+function renderWords(){
+  $('#view').innerHTML = `
+    <div class="view-head">
+      <div class="eyebrow">Словарь</div>
+      <h2>Изучение слов</h2>
+      <p>${activeVocab().length} слов на все случаи жизни — от базовых до живого разговорного ${STATE.learnLang==='kk'?'казахского':'американского'} языка.</p>
+    </div>
+    <input type="search" id="word-search" placeholder="🔍 Поиск слова..." style="margin-bottom:16px;" value="${wordsFilter.search}">
+    <div class="chip-row" id="cat-chips"></div>
+    <div class="chip-row">
+      <span class="chip ${wordsFilter.onlyFav?'active':''}" id="chip-fav">⭐ Избранное</span>
+      <span class="chip ${wordsFilter.onlyLearned?'active':''}" id="chip-learned">✅ Выученные</span>
+    </div>
+    <div id="word-list"></div>
+  `;
+  const chipsEl = $('#cat-chips');
+  chipsEl.innerHTML = [{id:'all',name:'Все',ic:'📋'},...CATEGORIES].map(c=>
+    `<span class="chip ${wordsFilter.cat===c.id?'active':''}" data-cat="${c.id}">${c.ic} ${c.name}</span>`
+  ).join('');
+  $$('#cat-chips .chip').forEach(ch=> ch.onclick = ()=>{ wordsFilter.cat = ch.dataset.cat; renderWords(); });
+  $('#chip-fav').onclick = ()=>{ wordsFilter.onlyFav = !wordsFilter.onlyFav; renderWords(); };
+  $('#chip-learned').onclick = ()=>{ wordsFilter.onlyLearned = !wordsFilter.onlyLearned; renderWords(); };
+  $('#word-search').oninput = (e)=>{ wordsFilter.search = e.target.value; renderWordList(); };
+  renderWordList();
+}
+function renderWordList(){
+  let list = activeVocab();
+  if(wordsFilter.cat!=='all') list = list.filter(w=>w.c===wordsFilter.cat);
+  if(wordsFilter.onlyFav) list = list.filter(isFav);
+  if(wordsFilter.onlyLearned) list = list.filter(isLearned);
+  if(wordsFilter.search.trim()){
+    const q = wordsFilter.search.toLowerCase();
+    list = list.filter(w=> w.e.toLowerCase().includes(q) || w.r.toLowerCase().includes(q));
+  }
+  const host = $('#word-list');
+  if(!list.length){ host.innerHTML = `<div class="empty"><div class="ic">🔍</div>Ничего не найдено</div>`; return; }
+  host.innerHTML = list.map(w=>{
+    const cat = CATEGORIES.find(c=>c.id===w.c);
+    return `<div class="word-row">
+      <div class="word-main">
+        <span class="word-en">${w.e}</span><span class="word-trans">${w.t}</span>
+        <span class="badge-level" style="margin-left:8px;">${cat?cat.name:''}</span>
+        <div class="word-ru">${w.r}</div>
+        <div class="word-ex">"${w.x}" — ${w.xr}</div>
+      </div>
+      <div class="word-actions">
+        <button class="icon-mini" onclick="speak('${w.e.replace(/'/g,"\\'")}')" title="Прослушать">🔊</button>
+        <button class="icon-mini ${isFav(w)?'on':''}" onclick="toggleFav(${JSON.stringify(w.e)});renderWordList();" title="В избранное">⭐</button>
+        <button class="icon-mini ${isLearned(w)?'learned':''}" onclick="toggleLearned(${JSON.stringify(w.e)});renderWordList();" title="Выучено">✔</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+
+/* ============================================================
+   КАРТОЧКИ (FLASHCARDS)
+   ============================================================ */
+let flashState = { deck:[], idx:0, flipped:false, onlyFav:false, onlyWeak:false, cat:'all' };
+function buildFlashDeck(){
+  let list = activeVocab();
+  if(flashState.cat!=='all') list = list.filter(w=>w.c===flashState.cat);
+  if(flashState.onlyFav) list = list.filter(isFav);
+  if(flashState.onlyWeak) list = getWeakWords().filter(w=> flashState.cat==='all' || w.c===flashState.cat);
+  flashState.deck = shuffle(list.length?list:activeVocab());
+  flashState.idx = 0; flashState.flipped = false;
+}
+function renderFlash(){
+  buildFlashDeck();
+  $('#view').innerHTML = `
+    <div class="view-head">
+      <div class="eyebrow">Тренировка памяти</div>
+      <h2>Карточки</h2>
+      <p>Переворачивайте карточки, отмечайте сложные слова, повторяйте в случайном порядке.</p>
+    </div>
+    <div class="chip-row">
+      <span class="chip ${flashState.cat==='all'?'active':''}" data-fc="all">📋 Все</span>
+      ${CATEGORIES.map(c=>`<span class="chip ${flashState.cat===c.id?'active':''}" data-fc="${c.id}">${c.ic} ${c.name}</span>`).join('')}
+    </div>
+    <div class="chip-row">
+      <span class="chip ${flashState.onlyFav?'active':''}" id="fc-fav">⭐ Только избранное</span>
+      <span class="chip ${flashState.onlyWeak?'active':''}" id="fc-weak">🧠 Только сложные</span>
+      <span class="chip" id="fc-shuffle">🔀 Перемешать</span>
+    </div>
+    <div class="flash-wrap" id="flash-host"></div>
+  `;
+  $$('[data-fc]').forEach(ch=> ch.onclick=()=>{ flashState.cat = ch.dataset.fc; renderFlash(); });
+  $('#fc-fav').onclick = ()=>{ flashState.onlyFav = !flashState.onlyFav; renderFlash(); };
+  $('#fc-weak').onclick = ()=>{ flashState.onlyWeak = !flashState.onlyWeak; renderFlash(); };
+  $('#fc-shuffle').onclick = ()=>{ flashState.deck = shuffle(flashState.deck); flashState.idx=0; flashState.flipped=false; renderFlashCard(); };
+  renderFlashCard();
+}
+function renderFlashCard(){
+  const host = $('#flash-host');
+  if(!flashState.deck.length){ host.innerHTML = `<div class="empty"><div class="ic">🃏</div>Нет карточек по этому фильтру</div>`; return; }
+  const w = flashState.deck[flashState.idx];
+  host.innerHTML = `
+    <div class="flash-scene">
+      <div class="flash-card ${flashState.flipped?'flipped':''}" id="fc-card">
+        <div class="flash-face flash-front">
+          <div class="en">${w.e}</div>
+          <div class="tr">${w.t}</div>
+          <div class="flash-hint">Нажмите, чтобы перевернуть</div>
+        </div>
+        <div class="flash-face flash-back">
+          <div class="ru">${w.r}</div>
+          <div class="tr">${w.t}</div>
+          <div class="ex">"${w.x}"<br>${w.xr}</div>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:13px;color:var(--ink-faint);">${flashState.idx+1} / ${flashState.deck.length}</div>
+    <div class="flash-controls">
+      <button class="icon-mini" onclick="speak(${JSON.stringify(w.e)})" title="Прослушать">🔊</button>
+      <button class="icon-mini ${isFav(w)?'on':''}" onclick="toggleFav(${JSON.stringify(w.e)});renderFlashCard();" title="Избранное">⭐</button>
+      <button class="icon-mini ${isLearned(w)?'learned':''}" onclick="toggleLearned(${JSON.stringify(w.e)});renderFlashCard();" title="Выучено">✔</button>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-ghost" onclick="flashPrev()">← Назад</button>
+      <button class="btn btn-primary" onclick="flashNext()">Далее →</button>
+    </div>
+  `;
+  $('#fc-card').onclick = (e)=>{ if(e.target.closest('.icon-mini')) return; flashState.flipped = !flashState.flipped; renderFlashCard(); };
+}
+function flashNext(){ flashState.idx = (flashState.idx+1) % flashState.deck.length; flashState.flipped=false; renderFlashCard(); }
+function flashPrev(){ flashState.idx = (flashState.idx-1+flashState.deck.length) % flashState.deck.length; flashState.flipped=false; renderFlashCard(); }
+
+/* ============================================================
+   ТЕСТЫ
+   ============================================================ */
+let testState = null;
+function renderTestsHome(){
+  $('#view').innerHTML = `
+    <div class="view-head">
+      <div class="eyebrow">Проверка знаний</div>
+      <h2>Тесты</h2>
+      <p>Выберите формат теста. Каждый тест — 10 случайных вопросов по выученным и новым словам.</p>
+    </div>
+    <div class="grid grid-2">
+      ${[
+        {t:'mcq', ic:'🔤', title:'Выбор перевода', d:'Выберите правильный перевод слова из четырёх вариантов.'},
+        {t:'typing', ic:'⌨️', title:'Напишите слово', d:'Введите английское слово по его переводу.'},
+        {t:'gapfill', ic:'✏️', title:'Заполните пропуск', d:'Вставьте пропущенное слово в предложение.'},
+        {t:'listening', ic:'🎧', title:'На слух', d:'Прослушайте слово и выберите правильный перевод.'},
+      ].map(m=>`
+        <div class="card">
+          <div style="font-size:26px;margin-bottom:8px;">${m.ic}</div>
+          <h3 style="font-size:16px;margin-bottom:6px;">${m.title}</h3>
+          <p style="font-size:13px;color:var(--ink-soft);margin-bottom:14px;">${m.d}</p>
+          <button class="btn btn-primary btn-block" onclick="startTest('${m.t}')">Начать</button>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+function startTest(type){
+  const pool = shuffle(activeVocab()).slice(0, Math.min(10, activeVocab().length));
+  testState = { type, pool, idx:0, correct:0, wrong:0, finished:false, answered:false };
+  renderTestQuestion();
+}
+function renderTestQuestion(){
+  const s = testState;
+  if(s.idx >= s.pool.length){ return renderTestResult(); }
+  const w = s.pool[s.idx];
+  s.answered = false;
+  let body = '';
+  if(s.type === 'mcq' || s.type === 'listening'){
+    const wrongs = shuffle(activeVocab().filter(x=>x.e!==w.e)).slice(0,3).map(x=>x.r);
+    const opts = shuffle([w.r, ...wrongs]);
+    body = `
+      <div class="test-q">
+        <div class="prompt-label">${s.type==='listening'?'Прослушайте и выберите перевод':'Выберите перевод'}</div>
+        <div class="prompt">
+          ${s.type==='listening' ? `<button class="btn btn-amber" onclick="speak(${JSON.stringify(w.e)})" style="margin-bottom:6px;">🔊 Прослушать</button>` : `${w.e}<span class="tr">${w.t}</span>`}
+        </div>
+      </div>
+      <div class="opt-grid" id="opt-grid">
+        ${opts.map(o=>`<button class="opt-btn" data-val="${o.replace(/"/g,'&quot;')}">${o}</button>`).join('')}
+      </div>
+    `;
+  } else if(s.type === 'typing'){
+    body = `
+      <div class="test-q">
+        <div class="prompt-label">Напишите слово по-английски</div>
+        <div class="prompt">${w.r}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:14px;">
+        <input type="text" class="input-answer" id="typing-input" autocomplete="off" placeholder="type here...">
+        <button class="btn btn-primary" id="typing-submit">Проверить</button>
+      </div>
+    `;
+  } else if(s.type === 'gapfill'){
+    const gapped = w.x.replace(new RegExp(w.e.split(' ')[0],'i'), '_____');
+    body = `
+      <div class="test-q">
+        <div class="prompt-label">Заполните пропуск</div>
+        <div class="prompt" style="font-size:19px;">${gapped}</div>
+        <div style="font-size:13px;color:var(--ink-soft);margin-top:10px;">${w.xr}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:14px;">
+        <input type="text" class="input-answer" id="typing-input" autocomplete="off" placeholder="type here...">
+        <button class="btn btn-primary" id="typing-submit">Проверить</button>
+      </div>
+    `;
+  }
+  $('#view').innerHTML = `
+    <div class="test-progress">
+      <span>${s.idx+1} / ${s.pool.length}</span>
+      <div class="progress-track"><div class="progress-fill" style="width:${(s.idx/s.pool.length)*100}%"></div></div>
+      <span>✅ ${s.correct} ❌ ${s.wrong}</span>
+    </div>
+    <div class="card">${body}</div>
+  `;
+  if(s.type==='mcq' || s.type==='listening'){
+    $$('#opt-grid .opt-btn').forEach(btn=> btn.onclick = ()=> submitAnswer(btn.dataset.val, w, btn));
+    if(s.type==='listening') setTimeout(()=>speak(w.e), 300);
+  } else {
+    const submit = ()=> submitAnswer($('#typing-input').value.trim(), w, null);
+    $('#typing-submit').onclick = submit;
+    $('#typing-input').addEventListener('keydown', e=>{ if(e.key==='Enter') submit(); });
+    $('#typing-input').focus();
+  }
+}
+function submitAnswer(val, w, btnEl){
+  const s = testState;
+  if(s.answered) return;
+  s.answered = true;
+  let isCorrect;
+  if(s.type==='mcq' || s.type==='listening'){
+    isCorrect = val === w.r;
+    $$('#opt-grid .opt-btn').forEach(b=>{
+      b.disabled = true;
+      if(b.dataset.val === w.r) b.classList.add('correct');
+      else if(b===btnEl) b.classList.add('wrong');
+    });
+  } else {
+    const target = w.e.split(' ')[0].toLowerCase();
+    isCorrect = val.toLowerCase() === w.e.toLowerCase() || val.toLowerCase() === target;
+    const input = $('#typing-input'); if(input) input.disabled = true;
+    if(!isCorrect) toast(`Правильный ответ: ${w.e}`, 'warn');
+  }
+  if(isCorrect){ s.correct++; addXp(3); } else { s.wrong++; recordMistake(w); }
+  setTimeout(()=>{ s.idx++; renderTestQuestion(); }, isCorrect ? 700 : 1400);
+}
+function renderTestResult(){
+  const s = testState;
+  STATE.testsDone++;
+  if(s.wrong===0) STATE.perfectTests++;
+  saveState(); touchActivity(); checkAchievements();
+  const pct = Math.round((s.correct/s.pool.length)*100);
+  $('#view').innerHTML = `
+    <div class="card result-hero">
+      <div style="font-size:40px;">${pct>=80?'🎉':pct>=50?'👍':'💪'}</div>
+      <div class="num">${pct}%</div>
+      <p style="color:var(--ink-soft);margin:8px 0 20px;">Правильно: ${s.correct} из ${s.pool.length}</p>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="startTest('${s.type}')">Пройти ещё раз</button>
+        <button class="btn btn-ghost" onclick="navigate('tests')">К списку тестов</button>
+      </div>
+    </div>
+  `;
+}
+
+
+/* ============================================================
+   ПРАКТИКА (ежедневные задания, мини-экзамены, повтор ошибок)
+   ============================================================ */
+function renderPractice(){
+  const weak = getWeakWords();
+  const dailyDone = STATE.activityLog[todayKey()]||0;
+  $('#view').innerHTML = `
+    <div class="view-head">
+      <div class="eyebrow">Тренировка</div>
+      <h2>Практика</h2>
+      <p>Ежедневные задания, работа над ошибками и быстрые мини-экзамены.</p>
+    </div>
+    <div class="grid grid-3">
+      <div class="card">
+        <div style="font-size:24px;">🎯</div>
+        <h3 style="font-size:16px;margin:8px 0 6px;">Ежедневное задание</h3>
+        <p style="font-size:13px;color:var(--ink-soft);margin-bottom:8px;">Сегодня: ${dailyDone} / ${STATE.dailyGoal} действий</p>
+        <div class="progress-track" style="margin-bottom:14px;"><div class="progress-fill" style="width:${Math.min(100,(dailyDone/STATE.dailyGoal)*100)}%"></div></div>
+        <button class="btn btn-primary btn-block" onclick="startTest('mcq')">Выполнить</button>
+      </div>
+      <div class="card">
+        <div style="font-size:24px;">🧠</div>
+        <h3 style="font-size:16px;margin:8px 0 6px;">Повтор ошибок</h3>
+        <p style="font-size:13px;color:var(--ink-soft);margin-bottom:14px;">${weak.length ? `${weak.length} слов, в которых вы ошибались` : 'Пока нет ошибок — отлично!'}</p>
+        <button class="btn ${weak.length?'btn-primary':'btn-ghost'} btn-block" ${weak.length?'':'disabled'} onclick="startWeakTest()">Повторить</button>
+      </div>
+      <div class="card">
+        <div style="font-size:24px;">⏱️</div>
+        <h3 style="font-size:16px;margin:8px 0 6px;">Мини-экзамен</h3>
+        <p style="font-size:13px;color:var(--ink-soft);margin-bottom:14px;">15 смешанных вопросов на все темы разом.</p>
+        <button class="btn btn-amber btn-block" onclick="startMiniExam()">Начать экзамен</button>
+      </div>
+    </div>
+    <h3 class="section-title">Случайное упражнение</h3>
+    <div class="card">
+      <p style="font-size:13.5px;color:var(--ink-soft);margin-bottom:14px;">Быстрая случайная тренировка — 5 вопросов в случайном формате.</p>
+      <button class="btn btn-ghost" onclick="startRandomDrill()">🎲 Запустить</button>
+    </div>
+  `;
+}
+function startWeakTest(){
+  const pool = shuffle(getWeakWords()).slice(0,10);
+  testState = { type:'mcq', pool, idx:0, correct:0, wrong:0, finished:false, answered:false };
+  renderTestQuestion();
+}
+function startMiniExam(){
+  const pool = shuffle(activeVocab()).slice(0,15);
+  testState = { type:'mcq', pool, idx:0, correct:0, wrong:0, finished:false, answered:false };
+  renderTestQuestion();
+}
+function startRandomDrill(){
+  const types = ['mcq','typing','gapfill','listening'];
+  startTest(pick(types));
+  testState.pool = testState.pool.slice(0,5);
+}
+
+/* ============================================================
+   ГРАММАТИКА
+   ============================================================ */
+function renderGrammar(){
+  $('#view').innerHTML = `
+    <div class="view-head">
+      <div class="eyebrow">Теория и практика</div>
+      <h2>Грамматика</h2>
+      <p>${activeGrammar().length} ключевых тем с объяснением, примерами и упражнениями.</p>
+    </div>
+    <div class="gram-list" id="gram-list"></div>
+  `;
+  const host = $('#gram-list');
+  host.innerHTML = activeGrammar().map(g=>`
+    <details class="gram-item" data-id="${g.id}">
+      <summary>${g.title} <span class="badge-level" style="margin-left:8px;">${g.level}</span></summary>
+      <div class="gram-body">
+        <p>${g.explain}</p>
+        <h5>Примеры</h5>
+        ${g.examples.map(ex=>`<div class="example-line">${ex}</div>`).join('')}
+        <h5>Упражнение</h5>
+        <div id="gex-${g.id}"></div>
+        <button class="btn btn-ghost btn-sm gram-ex-btn" data-check="${g.id}">Проверить ответы</button>
+      </div>
+    </details>
+  `).join('');
+  activeGrammar().forEach(g=>{
+    const exHost = $(`#gex-${g.id}`);
+    exHost.innerHTML = g.ex.map((item,i)=>`
+      <div style="margin-bottom:8px;">
+        <label style="font-size:13.5px;display:block;margin-bottom:4px;">${item.q}</label>
+        <input type="text" class="grammar-input" data-gid="${g.id}" data-i="${i}" placeholder="ваш ответ">
+        <span class="gram-feedback" data-gid="${g.id}" data-i="${i}" style="font-size:12px;margin-left:6px;"></span>
+      </div>
+    `).join('');
+  });
+  $$('.gram-ex-btn').forEach(btn=>{
+    btn.onclick = ()=>{
+      const gid = btn.dataset.check;
+      const g = activeGrammar().find(x=>x.id===gid);
+      let allCorrect = true;
+      g.ex.forEach((item,i)=>{
+        const input = $(`.grammar-input[data-gid="${gid}"][data-i="${i}"]`);
+        const fb = $(`.gram-feedback[data-gid="${gid}"][data-i="${i}"]`);
+        const val = (input.value||'').trim().toLowerCase().replace(/'/g,"'");
+        const ok = item.a.toLowerCase().split(' / ').some(v=>v===val) || val===item.a.toLowerCase();
+        fb.textContent = ok ? '✅' : `❌ (${item.a})`;
+        fb.style.color = ok ? 'var(--green-600)' : 'var(--coral-500)';
+        if(!ok) allCorrect = false;
+      });
+      if(!STATE.grammarViewed.includes(gid)){ STATE.grammarViewed.push(gid); saveState(); checkAchievements(); }
+      if(allCorrect){ addXp(8); toast('Всё верно! +8 XP'); }
+    };
+  });
+  $$('#gram-list details').forEach(d=>{
+    d.addEventListener('toggle', ()=>{
+      if(d.open && !STATE.grammarViewed.includes(d.dataset.id)){
+        STATE.grammarViewed.push(d.dataset.id); saveState(); checkAchievements();
+      }
+    });
+  });
+}
+
+/* ============================================================
+   РАЗГОВОРНАЯ ПРАКТИКА
+   ============================================================ */
+function renderSpeaking(){
+  $('#view').innerHTML = `
+    <div class="view-head">
+      <div class="eyebrow">Живой английский</div>
+      <h2>Разговорная практика</h2>
+      <p>Частые фразы, диалоги и повседневные ситуации из настоящей американской речи.</p>
+    </div>
+    <h3 class="section-title">Полезные фразы</h3>
+    <div id="phrase-list"></div>
+    <h3 class="section-title">Диалоги</h3>
+    <div id="dialogue-list"></div>
+  `;
+  $('#phrase-list').innerHTML = activePhrases().map(p=>`
+    <div class="phrase-card">
+      <div class="txt">
+        <div class="en">${p.e}</div>
+        <div class="ru">${p.r}</div>
+        ${p.note?`<div class="note">${p.note}</div>`:''}
+      </div>
+      <button class="icon-mini" onclick="speak(${JSON.stringify(p.e)})">🔊</button>
+    </div>
+  `).join('');
+  $('#dialogue-list').innerHTML = activeDialogues().map(d=>`
+    <div class="dialogue">
+      <h4>${d.title}</h4>
+      ${d.lines.map(l=>`
+        <div class="dline">
+          <div class="who ${l.who}">${l.who.toUpperCase()}</div>
+          <div class="txt">
+            <div class="en">${l.en} <button class="icon-mini" style="width:24px;height:24px;font-size:11px;vertical-align:middle;" onclick="speak(${JSON.stringify(l.en)})">🔊</button></div>
+            <div class="ru">${l.ru}</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+/* ============================================================
+   ДОСТИЖЕНИЯ
+   ============================================================ */
+function renderAchievements(){
+  const lvl = levelFromXp(STATE.xp);
+  $('#view').innerHTML = `
+    <div class="view-head">
+      <div class="eyebrow">Ваш прогресс</div>
+      <h2>Достижения</h2>
+      <p>Медали, уровни и опыт за регулярные занятия.</p>
+    </div>
+    <div class="card" style="margin-bottom:22px;">
+      <div class="xp-bar-wrap">
+        <div class="level-badge">${lvl.level}</div>
+        <div style="flex:1;">
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;">
+            <span>Уровень ${lvl.level}</span><span style="color:var(--ink-soft);">${lvl.cur} / ${lvl.need} XP</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" style="width:${(lvl.cur/lvl.need)*100}%"></div></div>
+        </div>
+      </div>
+    </div>
+    <h3 class="section-title">Медали (${STATE.unlocked.length} / ${ACHIEVEMENTS.length})</h3>
+    <div class="grid grid-4">
+      ${ACHIEVEMENTS.map(a=>{
+        const on = STATE.unlocked.includes(a.id);
+        return `<div class="medal ${on?'unlocked':''}">
+          <div class="ic">${a.ic}</div>
+          <div class="t">${a.t}</div>
+          <div class="d">${a.d}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+/* ============================================================
+   НАСТРОЙКИ
+   ============================================================ */
+function renderSettings(){
+  $('#view').innerHTML = `
+    <div class="view-head">
+      <div class="eyebrow">Персонализация</div>
+      <h2>Настройки</h2>
+    </div>
+    <div class="card">
+      <div class="setting-row">
+        <div><div class="t">Тёмная тема</div><div class="d">Переключение между светлой и тёмной темой</div></div>
+        <label class="switch"><input type="checkbox" id="set-theme" ${STATE.theme==='dark'?'checked':''}><span class="track"></span></label>
+      </div>
+      <div class="setting-row">
+        <div><div class="t">Размер шрифта</div><div class="d">Настройте комфортный размер текста</div></div>
+        <div class="seg" id="font-seg">
+          <button data-v="0.9" class="${STATE.fontScale==0.9?'active':''}">A-</button>
+          <button data-v="1" class="${STATE.fontScale==1?'active':''}">A</button>
+          <button data-v="1.15" class="${STATE.fontScale==1.15?'active':''}">A+</button>
+        </div>
+      </div>
+      <div class="setting-row">
+        <div><div class="t">Дневная цель</div><div class="d">Количество действий в день для поддержания серии</div></div>
+        <div class="seg" id="goal-seg">
+          ${[5,10,20].map(n=>`<button data-v="${n}" class="${STATE.dailyGoal==n?'active':''}">${n}</button>`).join('')}
+        </div>
+      </div>
+      <div class="setting-row">
+        <div><div class="t">Экспорт прогресса</div><div class="d">Сохранить прогресс в JSON-файл</div></div>
+        <button class="btn btn-ghost btn-sm" onclick="exportProgress()">Экспорт</button>
+      </div>
+      <div class="setting-row">
+        <div><div class="t">Импорт прогресса</div><div class="d">Загрузить ранее сохранённый JSON</div></div>
+        <label class="btn btn-ghost btn-sm" style="cursor:pointer;">Импорт<input type="file" id="import-file" accept=".json" style="display:none;"></label>
+      </div>
+      <div class="setting-row">
+        <div><div class="t">Очистить весь прогресс</div><div class="d">Это действие необратимо</div></div>
+        <button class="btn btn-danger btn-sm" onclick="clearProgress()">Очистить</button>
+      </div>
+    </div>
+  `;
+  $('#set-theme').onchange = (e)=>{ STATE.theme = e.target.checked ? 'dark' : 'light'; applyTheme(); saveState(); };
+  $$('#font-seg button').forEach(b=> b.onclick = ()=>{ STATE.fontScale = parseFloat(b.dataset.v); applyFontScale(); saveState(); renderSettings(); });
+  $$('#goal-seg button').forEach(b=> b.onclick = ()=>{ STATE.dailyGoal = parseInt(b.dataset.v); saveState(); renderSettings(); toast('Дневная цель обновлена'); });
+  $('#import-file').onchange = (e)=>{
+    const file = e.target.files[0]; if(!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev)=>{
+      try{
+        const data = JSON.parse(ev.target.result);
+        STATE = {...DEFAULT_STATE, ...data};
+        saveState(); applyTheme(); applyFontScale();
+        toast('Прогресс успешно импортирован!');
+        navigate('home');
+      }catch(err){ toast('Ошибка при чтении файла', 'warn'); }
+    };
+    reader.readAsText(file);
+  };
+}
+function exportProgress(){
+  const blob = new Blob([JSON.stringify(STATE, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `engup-progress-${todayKey()}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  toast('Прогресс экспортирован');
+}
+function clearProgress(){
+  if(!confirm('Точно очистить весь прогресс? Это действие нельзя отменить.')) return;
+  STATE = {...DEFAULT_STATE};
+  saveState(); applyTheme(); applyFontScale();
+  toast('Прогресс очищен', 'info');
+  navigate('home');
+}
+
+
+/* ============================================================
+   ЧАТ С ИИ-РЕПЕТИТОРОМ (живое общение на изучаемом языке)
+   ============================================================ */
+const CHAT_STARTERS = {
+  en: [
+    "Let's talk about my day",
+    "Teach me some slang for greetings",
+    "Help me order food at a restaurant",
+    "Correct my English, please: I go to store yesterday",
+  ],
+  kk: [
+    "Менің күнім туралы сөйлесейік",
+    "Сәлемдесудің бірнеше сөзін үйрет",
+    "Мейрамханада тамақ тапсыруға көмектес",
+    "Мына сөйлемді түзетші: Мен кеше дүкенге барамын",
+  ],
+};
+let chatBusy = false;
+
+function getChatHistory(){
+  if(!STATE.chatHistory) STATE.chatHistory = {en:[], kk:[]};
+  if(!STATE.chatHistory[STATE.learnLang]) STATE.chatHistory[STATE.learnLang] = [];
+  return STATE.chatHistory[STATE.learnLang];
+}
+
+function chatSystemPrompt(){
+  if(STATE.learnLang === 'kk'){
+    return "You are 'EngUp Tutor', a warm and encouraging Kazakh language conversation partner inside a self-study app. The learner's native language is Russian and their level is beginner to intermediate. Reply mostly in Kazakh, using short, natural, everyday sentences. If the learner makes a grammar or word-choice mistake, gently include a corrected version and a one-line explanation in Russian, formatted on a new line starting with '💡'. Keep replies under 90 words. End with a natural follow-up question in Kazakh to keep the conversation going. Do not switch fully into Russian or English unless the learner explicitly asks for a translation.";
+  }
+  return "You are 'EngUp Tutor', a warm and encouraging American English conversation partner inside a self-study app focused on everyday conversational English, including common slang. The learner's native language is Russian and their level is beginner to intermediate. Reply mostly in English, using short, natural, casual sentences, and feel free to use common American conversational expressions. If the learner makes a grammar or word-choice mistake, gently include a corrected version and a one-line explanation in Russian, formatted on a new line starting with '💡'. Keep replies under 90 words. End with a natural follow-up question in English to keep the conversation going. Do not switch fully into Russian unless the learner explicitly asks for a translation.";
+}
+
+function renderChat(){
+  const history = getChatHistory();
+  $('#view').innerHTML = `
+    <div class="view-head">
+      <div class="eyebrow">Живое общение</div>
+      <h2>Чат с ИИ-репетитором</h2>
+      <p>Общайтесь свободно на ${STATE.learnLang==='kk'?'казахском':'английском'} языке — ИИ мягко поправит ошибки и продолжит разговор.</p>
+    </div>
+    <div class="card">
+      <div class="chip-row" id="chat-starters" style="margin-bottom:14px;"></div>
+      <div class="chat-shell">
+        <div class="chat-messages" id="chat-messages"></div>
+        <div class="chat-input-bar">
+          <button class="icon-btn mic-btn" id="chat-mic" title="Голосовой ввод">🎤</button>
+          <textarea id="chat-input" rows="1" placeholder="${STATE.learnLang==='kk' ? 'Хабарламаңызды жазыңыз...' : 'Type your message...'}"></textarea>
+          <button class="send-btn" id="chat-send" title="Отправить">➤</button>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:10px;text-align:right;">
+      <button class="btn btn-ghost btn-sm" onclick="clearChat()">🗑 Очистить чат</button>
+    </div>
+  `;
+  $('#chat-starters').innerHTML = CHAT_STARTERS[STATE.learnLang].map(s=>
+    `<span class="chip" data-starter="${s.replace(/"/g,'&quot;')}">${s}</span>`
+  ).join('');
+  $$('#chat-starters .chip').forEach(ch=> ch.onclick = ()=>{ sendChatMessage(ch.dataset.starter); });
+
+  renderChatMessages();
+
+  const input = $('#chat-input');
+  const autoresize = ()=>{ input.style.height='auto'; input.style.height = Math.min(120, input.scrollHeight)+'px'; };
+  input.addEventListener('input', autoresize);
+  input.addEventListener('keydown', e=>{
+    if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); trySend(); }
+  });
+  $('#chat-send').onclick = trySend;
+  function trySend(){
+    const val = input.value.trim();
+    if(!val || chatBusy) return;
+    input.value=''; autoresize();
+    sendChatMessage(val);
+  }
+
+  setupChatMic();
+}
+
+function renderChatMessages(){
+  const host = $('#chat-messages');
+  if(!host) return;
+  const history = getChatHistory();
+  if(!history.length){
+    host.innerHTML = `<div class="chat-empty"><div class="ic">💬</div>Начните разговор — напишите сообщение или выберите тему выше.</div>`;
+  } else {
+    host.innerHTML = history.map(m=>`
+      <div class="chat-bubble-row ${m.role==='user'?'user':''}">
+        <div class="chat-avatar">${m.role==='user'?'🙂':'🤖'}</div>
+        <div>
+          <div class="chat-bubble">${formatChatText(m.text)}</div>
+          ${m.role==='assistant' ? `<div class="chat-bubble-actions"><button class="icon-mini" onclick="speak(${JSON.stringify(stripNote(m.text))})">🔊</button></div>` : ''}
+        </div>
+      </div>
+    `).join('');
+  }
+  host.scrollTop = host.scrollHeight;
+}
+function stripNote(text){ return text.split('💡')[0].trim(); }
+function formatChatText(text){
+  const parts = text.split('💡');
+  let html = escapeHtml(parts[0]).replace(/\n/g,'<br>');
+  if(parts[1]){ html += `<div class="note">💡${escapeHtml(parts[1])}</div>`; }
+  return html;
+}
+function escapeHtml(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function sendChatMessage(text){
+  if(chatBusy) return;
+  chatBusy = true;
+  const history = getChatHistory();
+  history.push({role:'user', text});
+  if(history.length>40) history.splice(0, history.length-40);
+  saveState();
+  renderChatMessages();
+  showTypingIndicator();
+
+  try{
+    const apiMessages = history.slice(-16).map(m=>({role: m.role, content: m.text}));
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({
+        model:"claude-sonnet-4-6",
+        max_tokens:1000,
+        system: chatSystemPrompt(),
+        messages: apiMessages,
+      }),
+    });
+    const data = await response.json();
+    let replyText = "";
+    if(data && data.content){
+      replyText = data.content.map(b=> b.type==='text' ? b.text : '').filter(Boolean).join('\n');
+    }
+    if(!replyText){ replyText = STATE.learnLang==='kk' ? "Кешіріңіз, жауап ала алмадым, қайталап көріңізші." : "Sorry, I couldn't get a reply — please try again."; }
+    history.push({role:'assistant', text:replyText});
+    if(history.length>40) history.splice(0, history.length-40);
+    addXp(2); touchActivity();
+    saveState(); checkAchievements();
+  }catch(err){
+    toast('Не удалось связаться с ИИ. Проверьте соединение.', 'warn');
+  }finally{
+    hideTypingIndicator();
+    chatBusy = false;
+    renderChatMessages();
+  }
+}
+
+function showTypingIndicator(){
+  const host = $('#chat-messages'); if(!host) return;
+  const row = document.createElement('div');
+  row.className = 'typing-row'; row.id = 'typing-indicator';
+  row.innerHTML = `<div class="chat-avatar">🤖</div><div class="typing-dots"><span></span><span></span><span></span></div>`;
+  host.appendChild(row);
+  host.scrollTop = host.scrollHeight;
+}
+function hideTypingIndicator(){
+  const el = $('#typing-indicator'); if(el) el.remove();
+}
+function clearChat(){
+  if(!confirm('Очистить историю чата для этого языка?')) return;
+  getChatHistory().length = 0;
+  saveState();
+  renderChatMessages();
+}
+
+/* ---------- голосовой ввод (Web Speech API, если доступен) ---------- */
+let recognizer = null, recognizing = false;
+function setupChatMic(){
+  const btn = $('#chat-mic');
+  if(!btn) return;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){ btn.style.display = 'none'; return; }
+  btn.onclick = ()=>{
+    if(recognizing){ recognizer && recognizer.stop(); return; }
+    recognizer = new SR();
+    recognizer.lang = STATE.learnLang==='kk' ? 'kk-KZ' : 'en-US';
+    recognizer.interimResults = false;
+    recognizer.maxAlternatives = 1;
+    recognizer.onstart = ()=>{ recognizing = true; btn.classList.add('recording'); };
+    recognizer.onend = ()=>{ recognizing = false; btn.classList.remove('recording'); };
+    recognizer.onerror = ()=>{ recognizing = false; btn.classList.remove('recording'); toast('Не удалось распознать речь', 'warn'); };
+    recognizer.onresult = (e)=>{
+      const text = e.results[0][0].transcript;
+      const input = $('#chat-input');
+      if(input){ input.value = (input.value ? input.value+' ' : '') + text; input.dispatchEvent(new Event('input')); }
+    };
+    recognizer.start();
+  };
+}
+
+/* ============================================================
+   ИНИЦИАЛИЗАЦИЯ
+   ============================================================ */
+function init(){
+  try{ applyTheme(); }catch(e){ console.error('applyTheme failed:', e); }
+  try{ applyFontScale(); }catch(e){ console.error('applyFontScale failed:', e); }
+  try{ renderLangSwitch(); }catch(e){ console.error('renderLangSwitch failed:', e); }
+  try{ renderNav(); }catch(e){ console.error('renderNav failed:', e); }
+  try{ navigate('home'); }catch(e){ console.error('navigate failed:', e); }
+}
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
